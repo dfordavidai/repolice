@@ -1,0 +1,10 @@
+
+{
+  "name": "RePolice - Crime Reporting App",
+  "description": "A professional and secure crime reporting platform for the Nigeria Police Force, featuring real-time GPS tagging, media uploads, and AI-powered incident analysis.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}
