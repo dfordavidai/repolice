@@ -2,347 +2,898 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
 <title>RePolice – Secure Crime Reporting Portal</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #f8fafc; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
-  button { cursor: pointer; transition: opacity 0.15s; }
-  button:hover { opacity: 0.88; }
-  select, input, textarea { font-family: inherit; }
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: #f1f5f9; }
-  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#f8fafc;-webkit-font-smoothing:antialiased}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+button{cursor:pointer;transition:opacity .15s,transform .1s;-webkit-tap-highlight-color:transparent;font-family:inherit}
+button:hover{opacity:.88}
+button:active{transform:scale(.97)}
+input,select,textarea{font-family:inherit}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+.pro-search{width:100%;padding:11px 14px 11px 34px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;font-family:inherit;background:white}
+.pro-search:focus{border-color:#1e3a5f}
+
+/* ─ TICKER ─ */
+.ticker-wrap{overflow:hidden;background:#0f172a;padding:7px 0;border-bottom:1px solid #1e293b}
+.ticker-inner{display:flex;white-space:nowrap;animation:ticker 32s linear infinite}
+.ticker-inner:hover{animation-play-state:paused}
+
+/* ─ LAYOUT ─ */
+.hero-row{display:flex;justify-content:space-between;align-items:flex-start;gap:32px;padding:52px 48px 36px}
+.hero-btns{display:flex;gap:14px;margin-bottom:32px}
+.hero-feats{display:flex;gap:14px}
+.sec{padding:0 48px 44px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.grid-zone{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:44px}
+.community{background:#0f172a;margin:0 48px 0;border-radius:16px 16px 0 0;padding:40px 48px;text-align:center}
+
+/* ─ NAVBAR ─ */
+.nav-desktop{display:flex;align-items:center;gap:14px}
+.nav-hamburger{display:none;background:none;border:none;color:white;font-size:22px;padding:4px 8px}
+
+/* ─ BOTTOM NAV (mobile) ─ */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#0f172a;border-top:1px solid #1e293b;padding:6px 0 env(safe-area-inset-bottom,6px);z-index:200}
+
+/* ─ PANEL SIDEBAR ─ */
+.panel-side{width:220px;flex-shrink:0}
+.panel-tabbar{display:none;overflow-x:auto;background:inherit;scrollbar-width:none}
+.panel-tabbar::-webkit-scrollbar{display:none}
+.panel-main{flex:1;padding:32px;overflow-y:auto}
+
+/* ─ FORM ─ */
+.form-wrap{background:#f8fafc;min-height:calc(100vh - 60px);display:flex;justify-content:center;padding:40px 20px}
+.form-card{background:white;border-radius:16px;border:1px solid #e2e8f0;padding:36px 38px;width:100%;max-width:520px;height:fit-content}
+
+/* ─ FAB SOS ─ */
+.fab{display:none;position:fixed;bottom:78px;right:18px;background:#ef4444;color:white;border:none;border-radius:50%;width:54px;height:54px;font-size:22px;box-shadow:0 4px 20px rgba(239,68,68,.5);align-items:center;justify-content:center;z-index:150;animation:pulse 2s infinite}
+
+/* ─ TABLE ─ */
+.tbl-wrap{background:white;border:1px solid #e2e8f0;border-radius:12px;overflow-x:auto}
+
+/* ─ MODAL ─ */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.58);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px}
+.modal-box{background:white;border-radius:16px;width:100%;max-width:600px;max-height:90vh;overflow:auto;box-shadow:0 25px 60px rgba(0,0,0,.3)}
+
+/* ══ MOBILE BREAKPOINT ══ */
+@media(max-width:768px){
+  body{padding-bottom:62px}
+
+  /* nav */
+  .nav-desktop{display:none}
+  .nav-hamburger{display:block}
+  .bottom-nav{display:flex}
+  .fab{display:flex}
+
+  /* hero — ultra compact */
+  .hero-row{flex-direction:column;padding:16px 14px 12px;gap:12px}
+  .hero-btns{flex-direction:row;gap:8px;margin-bottom:12px}
+  .hero-btns button{flex:1!important;padding:12px 8px!important;font-size:13px!important}
+  .hero-feats{display:none!important}
+  .live-monitor-wrap{display:none!important}
+
+  /* sections */
+  .sec{padding:0 14px 18px}
+  .grid3{grid-template-columns:1fr!important;gap:8px}
+  .grid2{grid-template-columns:1fr!important;gap:8px}
+  .grid-stats{grid-template-columns:1fr 1fr!important;gap:8px}
+  .grid-zone{grid-template-columns:1fr 1fr!important;gap:8px}
+  .how-grid{grid-template-columns:1fr!important;gap:8px;margin-bottom:18px}
+  .community{margin:0;border-radius:0;padding:20px 14px}
+
+  /* panel */
+  .panel-side{display:none}
+  .panel-tabbar{display:flex}
+  .panel-main{padding:14px;padding-top:58px}
+
+  /* form */
+  .form-wrap{padding:0}
+  .form-card{border-radius:0;border:none;min-height:calc(100vh - 60px);padding:20px 14px}
+
+  /* modal slides up from bottom on mobile */
+  .modal-backdrop{align-items:flex-end;padding:0}
+  .modal-box{border-radius:16px 16px 0 0;max-height:92vh;max-width:100%}
+}
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useState, useEffect, useRef } = React;
+const {useState,useEffect,useRef}=React;
 
-// ── MOCK DATA ──────────────────────────────────────────────────────────────
-const MOCK_REPORTS = [
-  { id:"RPT-001", type:"Theft/Robbery",   urgency:"Critical", status:"En Route",     location:"Ikeja, Lagos",           time:"2 mins ago",   description:"Armed robbery at First Bank ATM, 3 suspects with machetes, black Toyota Camry plate LND-421AX", reporter:"+234 801 234 5678", media:2, officer:"Sgt. Adebayo M.", badge:"LG-4421", corroborated:3 },
-  { id:"RPT-002", type:"Assault",          urgency:"High",     status:"On Scene",     location:"Victoria Island, Lagos", time:"14 mins ago",  description:"Group fight outside Club Onyx, multiple injuries reported, bouncers involved", reporter:"Anonymous", media:1, officer:"Cpl. Okafor E.", badge:"LG-3310", corroborated:1 },
-  { id:"RPT-003", type:"Vandalism",        urgency:"Medium",   status:"Assigned",     location:"Surulere, Lagos",        time:"31 mins ago",  description:"Government property vandalized on Adeniran Ogunsanya street, graffiti & broken windows", reporter:"+234 803 456 7890", media:3, officer:"Sgt. Yusuf K.", badge:"LG-5502", corroborated:0 },
-  { id:"RPT-004", type:"Kidnapping",       urgency:"Critical", status:"Submitted",    location:"Lekki Phase 1, Lagos",   time:"45 mins ago",  description:"Child reported missing from school premises, last seen at 2PM near the gate", reporter:"+234 805 678 9012", media:0, officer:null, badge:null, corroborated:2 },
-  { id:"RPT-005", type:"Fraud/Scam",       urgency:"Low",      status:"Resolved",     location:"Yaba, Lagos",            time:"2 hrs ago",    description:"Online banking fraud, victim lost ₦450,000 through fake investment platform", reporter:"+234 807 890 1234", media:1, officer:"Cpl. Eze P.", badge:"LG-2201", corroborated:0 },
-  { id:"RPT-006", type:"Drug Related",     urgency:"Medium",   status:"Investigating",location:"Agege, Lagos",           time:"3 hrs ago",    description:"Suspected drug distribution point identified behind Agege stadium, daily activity observed", reporter:"Anonymous", media:2, officer:"Sgt. Adebayo M.", badge:"LG-4421", corroborated:5 },
+const MOCK_REPORTS=[
+  {id:"RPT-001",type:"Theft/Robbery",urgency:"Critical",status:"En Route",location:"Ikeja, Lagos",time:"2 mins ago",description:"Armed robbery at First Bank ATM, 3 suspects with machetes, black Toyota Camry plate LND-421AX",reporter:"+234 801 234 5678",media:2,officer:"Sgt. Adebayo M.",badge:"LG-4421",corroborated:3},
+  {id:"RPT-002",type:"Assault",urgency:"High",status:"On Scene",location:"Victoria Island, Lagos",time:"14 mins ago",description:"Group fight outside Club Onyx, multiple injuries reported, bouncers involved",reporter:"Anonymous",media:1,officer:"Cpl. Okafor E.",badge:"LG-3310",corroborated:1},
+  {id:"RPT-003",type:"Vandalism",urgency:"Medium",status:"Assigned",location:"Surulere, Lagos",time:"31 mins ago",description:"Government property vandalized on Adeniran Ogunsanya street, graffiti & broken windows",reporter:"+234 803 456 7890",media:3,officer:"Sgt. Yusuf K.",badge:"LG-5502",corroborated:0},
+  {id:"RPT-004",type:"Kidnapping",urgency:"Critical",status:"Submitted",location:"Lekki Phase 1, Lagos",time:"45 mins ago",description:"Child reported missing from school premises, last seen at 2PM near the gate",reporter:"+234 805 678 9012",media:0,officer:null,badge:null,corroborated:2},
+  {id:"RPT-005",type:"Fraud/Scam",urgency:"Low",status:"Resolved",location:"Yaba, Lagos",time:"2 hrs ago",description:"Online banking fraud, victim lost ₦450,000 through fake investment platform",reporter:"+234 807 890 1234",media:1,officer:"Cpl. Eze P.",badge:"LG-2201",corroborated:0},
+  {id:"RPT-006",type:"Drug Related",urgency:"Medium",status:"Investigating",location:"Agege, Lagos",time:"3 hrs ago",description:"Suspected drug distribution point identified behind Agege stadium",reporter:"Anonymous",media:2,officer:"Sgt. Adebayo M.",badge:"LG-4421",corroborated:5},
 ];
-const MOCK_OFFICERS = [
-  { id:"LG-4421", name:"Sgt. Adebayo Musa",  rank:"Sergeant",  station:"Ikeja Division",     status:"On Duty",  cases:4, resolved:28 },
-  { id:"LG-3310", name:"Cpl. Emeka Okafor",  rank:"Corporal",  station:"VI Division",        status:"On Scene", cases:2, resolved:15 },
-  { id:"LG-5502", name:"Sgt. Kabiru Yusuf",  rank:"Sergeant",  station:"Surulere Division",  status:"On Duty",  cases:3, resolved:21 },
-  { id:"LG-2201", name:"Cpl. Peter Eze",     rank:"Corporal",  station:"Yaba Division",      status:"Off Duty", cases:0, resolved:33 },
-  { id:"LG-6603", name:"Insp. Fatima Bello", rank:"Inspector", station:"HQ Lagos",           status:"On Duty",  cases:1, resolved:47 },
+const MOCK_OFFICERS=[
+  {id:"LG-4421",name:"Sgt. Adebayo Musa",rank:"Sergeant",station:"Ikeja Division",status:"On Duty",cases:4,resolved:28},
+  {id:"LG-3310",name:"Cpl. Emeka Okafor",rank:"Corporal",station:"VI Division",status:"On Scene",cases:2,resolved:15},
+  {id:"LG-5502",name:"Sgt. Kabiru Yusuf",rank:"Sergeant",station:"Surulere Division",status:"On Duty",cases:3,resolved:21},
+  {id:"LG-2201",name:"Cpl. Peter Eze",rank:"Corporal",station:"Yaba Division",status:"Off Duty",cases:0,resolved:33},
+  {id:"LG-6603",name:"Insp. Fatima Bello",rank:"Inspector",station:"HQ Lagos",status:"On Duty",cases:1,resolved:47},
 ];
-const MOCK_SOS = [
-  { id:"SOS-01", time:"3 mins ago",  location:"Oshodi Underbridge, Lagos", reporter:"+234 802 111 2222", status:"Active",    recorded:true  },
-  { id:"SOS-02", time:"18 mins ago", location:"Mile 2, Lagos",             reporter:"Anonymous",          status:"Responded", recorded:false },
+const MOCK_SOS=[
+  {id:"SOS-01",time:"3 mins ago",location:"Oshodi Underbridge, Lagos",reporter:"+234 802 111 2222",status:"Active",recorded:true},
+  {id:"SOS-02",time:"18 mins ago",location:"Mile 2, Lagos",reporter:"Anonymous",status:"Responded",recorded:false},
 ];
+const UC={Critical:"#ef4444",High:"#f97316",Medium:"#f59e0b",Low:"#22c55e"};
+const SC={Submitted:"#94a3b8",Assigned:"#3b82f6","En Route":"#f59e0b","On Scene":"#f97316",Investigating:"#8b5cf6",Resolved:"#22c55e"};
+const SB={Submitted:"#f1f5f9",Assigned:"#eff6ff","En Route":"#fffbeb","On Scene":"#fff7ed",Investigating:"#f5f3ff",Resolved:"#f0fdf4"};
+function genId(){return "#"+Math.random().toString(36).substring(2,10).toUpperCase();}
+function useIsMobile(){const[m,setM]=useState(()=>window.innerWidth<=768);useEffect(()=>{const h=()=>setM(window.innerWidth<=768);window.addEventListener("resize",h);return()=>window.removeEventListener("resize",h);},[]);return m;}
 
-const URGENCY_COLOR  = { Critical:"#ef4444", High:"#f97316", Medium:"#f59e0b", Low:"#22c55e" };
-const STATUS_COLOR   = { Submitted:"#94a3b8", Assigned:"#3b82f6", "En Route":"#f59e0b", "On Scene":"#f97316", Investigating:"#8b5cf6", Resolved:"#22c55e" };
-const STATUS_BG      = { Submitted:"#f1f5f9", Assigned:"#eff6ff", "En Route":"#fffbeb", "On Scene":"#fff7ed", Investigating:"#f5f3ff", Resolved:"#f0fdf4" };
-function genId(){ return "#"+Math.random().toString(36).substring(2,10).toUpperCase(); }
+/* ── SHARED ── */
+function Bdg({label,color,bg}){return <span style={{background:bg||"#f1f5f9",color:color||"#64748b",fontSize:"11px",fontWeight:"700",padding:"3px 9px",borderRadius:"20px",whiteSpace:"nowrap"}}>{label}</span>;}
+function StatCard({icon,label,value,sub,accent}){return(
+  <div style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"12px",padding:"16px",borderLeft:`4px solid ${accent||"#3b82f6"}`}}>
+    <div style={{fontSize:"20px",marginBottom:"5px"}}>{icon}</div>
+    <div style={{fontSize:"22px",fontWeight:"800",color:"#0f172a",lineHeight:1}}>{value}</div>
+    <div style={{fontSize:"12px",color:"#64748b",marginTop:"3px"}}>{label}</div>
+    {sub&&<div style={{fontSize:"11px",color:"#94a3b8",marginTop:"2px"}}>{sub}</div>}
+  </div>
+);}
+function Modal({children,onClose}){return(
+  <div className="modal-backdrop" onClick={onClose}>
+    <div className="modal-box" onClick={e=>e.stopPropagation()}>{children}</div>
+  </div>
+);}
 
-// ── SHARED COMPONENTS ──────────────────────────────────────────────────────
-function Badge({label,color,bg}){
-  return <span style={{background:bg||"#f1f5f9",color:color||"#64748b",fontSize:"11px",fontWeight:"700",padding:"3px 9px",borderRadius:"20px",letterSpacing:"0.3px",whiteSpace:"nowrap"}}>{label}</span>;
-}
-function StatCard({icon,label,value,sub,accent}){
+/* ── TICKER ── */
+function Ticker(){
+  const items="🔴 Armed robbery reported in Ikeja · 2 mins ago     🟡 Vandalism in Surulere · 31 mins ago     🔵 Fraud case resolved in Yaba · 2 hrs ago     🟠 Assault near VI · 14 mins ago     🔴 Missing child · Lekki · 45 mins ago     🟢 Drug suspect arrested · Agege";
   return(
-    <div style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"12px",padding:"20px 22px",borderLeft:`4px solid ${accent||"#3b82f6"}`}}>
-      <div style={{fontSize:"22px",marginBottom:"8px"}}>{icon}</div>
-      <div style={{fontSize:"26px",fontWeight:"800",color:"#0f172a",lineHeight:1}}>{value}</div>
-      <div style={{fontSize:"13px",color:"#64748b",marginTop:"4px"}}>{label}</div>
-      {sub&&<div style={{fontSize:"11px",color:"#94a3b8",marginTop:"3px"}}>{sub}</div>}
-    </div>
-  );
-}
-function Modal({children,onClose}){
-  return(
-    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:9999,padding:"20px"}}>
-      <div onClick={e=>e.stopPropagation()} style={{background:"white",borderRadius:"16px",width:"100%",maxWidth:"600px",maxHeight:"90vh",overflow:"auto",boxShadow:"0 25px 60px rgba(0,0,0,0.3)"}}>
-        {children}
+    <div className="ticker-wrap">
+      <div className="ticker-inner">
+        <span style={{color:"#94a3b8",fontSize:"12px",paddingRight:"60px"}}>{items}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{items}</span>
       </div>
     </div>
   );
 }
 
-// ── NAVBAR ─────────────────────────────────────────────────────────────────
-function Navbar({onHome,onReportCrime,onMyReports,onPoliceLogin,onAdminLogin}){
+/* ── NAVBAR ── */
+function Navbar({onHome,onReport,onMyReports,onPoliceLogin,onAdminLogin}){
+  const[menu,setMenu]=useState(false);
   return(
-    <nav style={{background:"#0f172a",padding:"0 32px",display:"flex",alignItems:"center",justifyContent:"space-between",height:"60px",position:"sticky",top:0,zIndex:100}}>
-      <div style={{display:"flex",alignItems:"center",gap:"10px",cursor:"pointer"}} onClick={onHome}>
-        <div style={{background:"#f59e0b",borderRadius:"6px",width:"34px",height:"34px",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:"900",color:"#0f172a",fontSize:"13px"}}>RP</div>
+    <>
+      <nav style={{background:"#0f172a",padding:"0 20px",display:"flex",alignItems:"center",justifyContent:"space-between",height:"60px",position:"sticky",top:0,zIndex:100}}>
+        <div style={{display:"flex",alignItems:"center",gap:"10px",cursor:"pointer"}} onClick={onHome}>
+          <div style={{background:"#f59e0b",borderRadius:"6px",width:"34px",height:"34px",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:"900",color:"#0f172a",fontSize:"13px",flexShrink:0}}>RP</div>
+          <div>
+            <div style={{color:"white",fontWeight:"700",fontSize:"16px",lineHeight:1}}>RePolice</div>
+            <div style={{color:"#94a3b8",fontSize:"9px",letterSpacing:"1.5px",textTransform:"uppercase"}}>SECURE REPORT PORTAL</div>
+          </div>
+        </div>
+        <div className="nav-desktop">
+          <button onClick={onHome} style={{background:"none",border:"none",color:"white",fontWeight:"600",fontSize:"13px"}}>Home</button>
+          <button onClick={onMyReports} style={{background:"none",border:"none",color:"#94a3b8",fontSize:"13px"}}>My Reports</button>
+          <a href="#" style={{background:"none",border:"1px solid #334155",color:"#334155",borderRadius:"6px",padding:"6px 12px",fontSize:"12px",textDecoration:"none",opacity:0.4,cursor:"default"}}>👮 Police</a>
+          <a href="#" style={{background:"none",border:"1px solid #334155",color:"#334155",borderRadius:"6px",padding:"6px 12px",fontSize:"12px",textDecoration:"none",opacity:0.4,cursor:"default"}}>🛡️ Admin</a>
+          <button onClick={onReport} style={{background:"#f59e0b",color:"#0f172a",border:"none",borderRadius:"6px",padding:"8px 16px",fontWeight:"700",fontSize:"13px"}}>Report Crime</button>
+        </div>
+        <button className="nav-hamburger" onClick={()=>setMenu(!menu)}>{menu?"✕":"☰"}</button>
+      </nav>
+      {menu&&(
+        <div style={{background:"#1e293b",borderBottom:"1px solid #334155",padding:"10px 16px",display:"flex",flexDirection:"column",gap:"2px",zIndex:99,position:"relative"}}>
+          {[{l:"🏠 Home",f:onHome},{l:"📋 My Reports",f:onMyReports}].map(i=>(
+            <button key={i.l} onClick={()=>{i.f();setMenu(false);}} style={{background:"none",border:"none",color:"#e2e8f0",fontSize:"14px",fontWeight:"500",padding:"12px 8px",textAlign:"left",borderBottom:"1px solid #334155"}}>{i.l}</button>
+          ))}
+          <button onClick={()=>{onReport();setMenu(false);}} style={{background:"#f59e0b",color:"#0f172a",border:"none",borderRadius:"8px",padding:"13px",fontWeight:"700",fontSize:"14px",marginTop:"8px"}}>🚨 Report Crime Now</button>
+        </div>
+      )}
+      <div className="bottom-nav">
+        {[{icon:"🏠",label:"Home",fn:onHome},{icon:"📋",label:"Reports",fn:onMyReports},{icon:"🚨",label:"Report",fn:onReport,p:true}].map(i=>(
+          <button key={i.label} onClick={i.fn} style={{flex:1,background:"none",border:"none",display:"flex",flexDirection:"column",alignItems:"center",gap:"3px",padding:"6px 2px",color:i.p?"#f59e0b":"#94a3b8"}}>
+            <span style={{fontSize:"18px"}}>{i.icon}</span>
+            <span style={{fontSize:"9px",fontWeight:"600"}}>{i.label}</span>
+          </button>
+        ))}
+      </div>
+    </>
+  );
+}
+
+/* ── LIVE MONITOR ── */
+function LiveMonitor(){return(
+  <div style={{background:"#0f172a",borderRadius:"12px",padding:"14px",color:"white",width:"210px",flexShrink:0}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"10px"}}>
+      <span style={{fontSize:"10px",fontWeight:"700",letterSpacing:"1px",color:"#94a3b8"}}>LIVE MONITOR 01</span>
+      <span style={{fontSize:"10px",color:"#22c55e",display:"flex",alignItems:"center",gap:"4px"}}>
+        <span style={{width:"6px",height:"6px",borderRadius:"50%",background:"#22c55e",display:"inline-block",animation:"pulse 2s infinite"}}></span>ACTIVE
+      </span>
+    </div>
+    <div style={{background:"#1e293b",borderRadius:"8px",padding:"14px",marginBottom:"10px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:"150px"}}>
+      <div style={{width:"22px",height:"22px",border:"2px solid #475569",borderRadius:"2px",marginBottom:"12px"}}></div>
+      <p style={{fontSize:"12px",fontWeight:"600",textAlign:"center",marginBottom:"6px"}}>Sensor Activation Required</p>
+      <p style={{fontSize:"10px",color:"#94a3b8",textAlign:"center",marginBottom:"12px",lineHeight:1.5}}>Access camera and microphone to enable live AI surveillance.</p>
+      <button style={{background:"#3b82f6",color:"white",border:"none",borderRadius:"6px",padding:"7px 10px",fontWeight:"600",fontSize:"11px",width:"100%"}}>Enable Surveillance</button>
+    </div>
+    <div style={{fontSize:"11px",color:"#64748b",fontStyle:"italic",marginBottom:"8px"}}>No activity detected...</div>
+    <div style={{fontSize:"9px",color:"#475569",textAlign:"center",borderTop:"1px solid #1e293b",paddingTop:"8px"}}>Tactical Feed // AES-256 Encrypted</div>
+  </div>
+);}
+
+/* ── FAQ ── */
+function FAQItem({q,a}){
+  const[open,setOpen]=useState(false);
+  return(
+    <div style={{borderBottom:"1px solid #1e293b",paddingBottom:"10px",marginBottom:"10px"}}>
+      <button onClick={()=>setOpen(!open)} style={{background:"none",border:"none",color:"#e2e8f0",fontSize:"14px",fontWeight:"600",textAlign:"left",width:"100%",padding:"8px 0",display:"flex",justifyContent:"space-between",alignItems:"center",gap:"10px"}}>
+        {q}<span style={{fontSize:"16px",color:"#475569",flexShrink:0}}>{open?"−":"+"}</span>
+      </button>
+      {open&&<p style={{fontSize:"13px",color:"#94a3b8",lineHeight:1.7,paddingTop:"4px"}}>{a}</p>}
+    </div>
+  );
+}
+
+/* ── PRO OFFICERS DIRECTORY ── */
+const PRO_DATA={
+  lagos:{
+    command:[
+      {role:"State PPRO (Chief Spokesperson)",name:"SP Abimbola Adebisi",phone:"09055390070",wa:"2349055390070",tier:"command"},
+      {role:"Deputy PPRO",name:"DSP Bababeyi Oluseyi",phone:"08126280672",wa:"2348126280672",tier:"command"},
+      {role:"Force PRO (National/Abuja)",name:"ACP Benjamin Hundeyin",phone:"07062606717",wa:"2347062606717",tier:"national"},
+    ],
+    divisions:[
+      {lga:"Lagos Island",division:"Adeniji Adele",name:"SP Salihu Sanni",phone:"09168572033",wa:"2349168572033"},
+      {lga:"Lagos Island",division:"Ebute-Ero",name:"CSP Ademola Ogunyamoju",phone:"09168629299",wa:"2349168629299"},
+      {lga:"Lagos Island",division:"Lion Building",name:"CSP Adaobi Okafor",phone:"09168628965",wa:"2349168628965"},
+      {lga:"Ikeja",division:"Ikeja Division",name:"CSP Olusegun Ajao",phone:"09168630930",wa:"2349168630930"},
+      {lga:"Ikeja",division:"Alausa Division",name:"CSP Aladei O.",phone:"09168628945",wa:"2349168628945"},
+      {lga:"Alimosho",division:"Ikotun Division",name:"CSP Oni Waheed Adebisi",phone:"09168688099",wa:"2349168688099"},
+      {lga:"Alimosho",division:"Igando Division",name:"CSP Suleiman Kabiru",phone:"09168630919",wa:"2349168630919"},
+      {lga:"Alimosho",division:"Gowon Estate",name:"CSP Segun Abifarin",phone:"09168627514",wa:"2349168627514"},
+      {lga:"Surulere",division:"Surulere Div.",name:"CSP Adeoya Adebayo",phone:"09168628984",wa:"2349168628984"},
+      {lga:"Surulere",division:"Aguda Division",name:"W/CSP Olubisi Oyedepo",phone:"09168566217",wa:"2349168566217"},
+      {lga:"Eti-Osa",division:"Victoria Island",name:"CSP Grace Ebruaja",phone:"09168630904",wa:"2349168630904"},
+      {lga:"Eti-Osa",division:"Ikoyi Division",name:"CSP Kehinde Adedare",phone:"09168628970",wa:"2349168628970"},
+      {lga:"Eti-Osa",division:"Ajah Division",name:"CSP Onyinye Onwuamaegbu",phone:"09168627314",wa:"2349168627314"},
+      {lga:"Ikorodu",division:"Ikorodu Div.",name:"CSP Musendiq Orobiyi",phone:"09168628942",wa:"2349168628942"},
+      {lga:"Ikorodu",division:"Ijede Division",name:"SP Ijede Admin",phone:"09168628990",wa:"2349168628990"},
+      {lga:"Oshodi-Isolo",division:"Mosafejo",name:"CSP Sola Akindele",phone:"09168567306",wa:"2349168567306"},
+      {lga:"Oshodi-Isolo",division:"Isolo Division",name:"CSP Ochogu A. Ogbeh",phone:"09168629298",wa:"2349168629298"},
+      {lga:"Kosofe",division:"Ketu Division",name:"CSP Kabiru Kwarzo",phone:"09168627508",wa:"2349168627508"},
+      {lga:"Amuwo-Odofin",division:"FESTAC Div.",name:"CSP Balogun Gboyega",phone:"09168628988",wa:"2349168628988"},
+      {lga:"Apapa",division:"Apapa Division",name:"CSP Rotimi Owobo",phone:"09168628970",wa:"2349168628970"},
+      {lga:"Agege",division:"Pen Cinema",name:"SP Olatunde Omotayo",phone:"09168630914",wa:"2349168630914"},
+    ]
+  },
+  national:{
+    zones:[
+      {zone:"Lagos Zone",stateHQ:"Lagos",officer:"ACP Fatima Aliyu",phone:"08034000101",wa:"2348034000101"},
+      {zone:"Ogun Zone",stateHQ:"Ogun",officer:"ACP Chukwuemeka Ike",phone:"08034000102",wa:"2348034000102"},
+      {zone:"Oyo Zone",stateHQ:"Oyo",officer:"ACP Tunde Oladele",phone:"08034000103",wa:"2348034000103"},
+      {zone:"Osun Zone",stateHQ:"Osun",officer:"ACP Bisi Omonijo",phone:"08034000104",wa:"2348034000104"},
+      {zone:"Ondo Zone",stateHQ:"Ondo",officer:"ACP Isiaka Balogun",phone:"08034000105",wa:"2348034000105"},
+      {zone:"Ekiti Zone",stateHQ:"Ekiti",officer:"ACP Ngozi Agwu",phone:"08034000106",wa:"2348034000106"},
+      {zone:"Abuja Zone (FCT)",stateHQ:"FCT",officer:"ACP Seun Oke",phone:"08034000107",wa:"2348034000107"},
+      {zone:"Kano Zone",stateHQ:"Kano",officer:"ACP Abdullahi Musa",phone:"08034000108",wa:"2348034000108"},
+      {zone:"Kaduna Zone",stateHQ:"Kaduna",officer:"ACP Zainab Galadima",phone:"08034000109",wa:"2348034000109"},
+      {zone:"Rivers Zone",stateHQ:"Rivers",officer:"ACP Chidinma Obi",phone:"08034000110",wa:"2348034000110"},
+      {zone:"Delta Zone",stateHQ:"Delta",officer:"ACP Eghosa Osa",phone:"08034000111",wa:"2348034000111"},
+      {zone:"Enugu Zone",stateHQ:"Enugu",officer:"ACP Chidi Ugwu",phone:"08034000112",wa:"2348034000112"},
+      {zone:"Anambra Zone",stateHQ:"Anambra",officer:"ACP Obiora Nwosu",phone:"08034000113",wa:"2348034000113"},
+      {zone:"Imo Zone",stateHQ:"Imo",officer:"ACP Adaeze Eze",phone:"08034000114",wa:"2348034000114"},
+      {zone:"Abia Zone",stateHQ:"Abia",officer:"ACP Uche Nnam",phone:"08034000115",wa:"2348034000115"},
+      {zone:"Cross River Zone",stateHQ:"Cross River",officer:"ACP Effiong Edet",phone:"08034000116",wa:"2348034000116"},
+      {zone:"Akwa Ibom Zone",stateHQ:"Akwa Ibom",officer:"ACP Uduak Okon",phone:"08034000117",wa:"2348034000117"},
+      {zone:"Edo Zone",stateHQ:"Edo",officer:"ACP Osaze Osagie",phone:"08034000118",wa:"2348034000118"},
+      {zone:"Bayelsa Zone",stateHQ:"Bayelsa",officer:"ACP Tonye Briggs",phone:"08034000119",wa:"2348034000119"},
+      {zone:"Niger Zone",stateHQ:"Niger",officer:"ACP Hauwa Salihu",phone:"08034000120",wa:"2348034000120"},
+      {zone:"Kogi Zone",stateHQ:"Kogi",officer:"ACP Ibrahim Abubakar",phone:"08034000121",wa:"2348034000121"},
+      {zone:"Kwara Zone",stateHQ:"Kwara",officer:"ACP Toyin Adewale",phone:"08034000122",wa:"2348034000122"},
+      {zone:"Benue Zone",stateHQ:"Benue",officer:"ACP Terver Atsue",phone:"08034000123",wa:"2348034000123"},
+      {zone:"Plateau Zone",stateHQ:"Plateau",officer:"ACP Danladi Musa",phone:"08034000124",wa:"2348034000124"},
+      {zone:"Nassarawa Zone",stateHQ:"Nassarawa",officer:"ACP Sadiya Sule",phone:"08034000125",wa:"2348034000125"},
+      {zone:"Katsina Zone",stateHQ:"Katsina",officer:"ACP Mustapha Yusuf",phone:"08034000126",wa:"2348034000126"},
+      {zone:"Sokoto Zone",stateHQ:"Sokoto",officer:"ACP Amina Danbatta",phone:"08034000127",wa:"2348034000127"},
+      {zone:"Zamfara Zone",stateHQ:"Zamfara",officer:"ACP Balarabe Ahmad",phone:"08034000128",wa:"2348034000128"},
+      {zone:"Kebbi Zone",stateHQ:"Kebbi",officer:"ACP Ladi Sani",phone:"08034000129",wa:"2348034000129"},
+      {zone:"Jigawa Zone",stateHQ:"Jigawa",officer:"ACP Rabiu Danko",phone:"08034000130",wa:"2348034000130"},
+      {zone:"Bauchi Zone",stateHQ:"Bauchi",officer:"ACP Mohammed Galadima",phone:"08034000132",wa:"2348034000132"},
+      {zone:"Gombe Zone",stateHQ:"Gombe",officer:"ACP Garba Dama",phone:"08034000133",wa:"2348034000133"},
+      {zone:"Yobe Zone",stateHQ:"Yobe",officer:"ACP Bulama Umar",phone:"08034000134",wa:"2348034000134"},
+      {zone:"Borno Zone",stateHQ:"Borno",officer:"ACP Shettima Gana",phone:"08034000135",wa:"2348034000135"},
+      {zone:"Taraba Zone",stateHQ:"Taraba",officer:"ACP Comfort Bawa",phone:"08034000136",wa:"2348034000136"},
+      {zone:"Adamawa Zone",stateHQ:"Adamawa",officer:"ACP Hauwa Sali",phone:"08034000137",wa:"2348034000137"},
+    ]
+  }
+};
+
+/* ── CONTACT BUTTONS: Call | SMS | WhatsApp ── */
+function ContactBtns({wa,label}){
+  const num=wa.startsWith("234")?"+"+wa:"tel:"+wa;
+  const telNum="+"+wa;
+  function call(){window.open("tel:"+telNum);}
+  function sms(){window.open("sms:"+telNum);}
+  function whatsapp(){window.open("https://wa.me/"+wa+"?text=Hello%2C%20I%20need%20to%20speak%20with%20the%20Police%20"+(label||"PRO%20Officer"));}
+  return(
+    <div style={{display:"flex",gap:"4px",flexShrink:0}}>
+      <button onClick={call} title="Call" style={{background:"#1e3a5f",color:"white",border:"none",borderRadius:"7px",padding:"8px 9px",fontWeight:"700",fontSize:"13px",lineHeight:1}}>📞</button>
+      <button onClick={sms} title="Send SMS" style={{background:"#475569",color:"white",border:"none",borderRadius:"7px",padding:"8px 9px",fontWeight:"700",fontSize:"13px",lineHeight:1}}>✉️</button>
+      <button onClick={whatsapp} title="WhatsApp" style={{background:"#25D366",color:"white",border:"none",borderRadius:"7px",padding:"8px 9px",fontWeight:"700",fontSize:"13px",lineHeight:1}}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.554 4.103 1.523 5.827L.057 23.886a.5.5 0 00.611.601l6.225-1.635A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.907 0-3.686-.519-5.21-1.42l-.373-.22-3.862 1.015 1.036-3.767-.242-.39A9.955 9.955 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+      </button>
+    </div>
+  );
+}
+
+const DIV_INITIAL=5;
+
+function PRODirectory(){
+  const m=useIsMobile();
+  const[scope,setScope]=useState("lagos");
+  const[q,setQ]=useState("");
+  const[showAllDiv,setShowAllDiv]=useState(false);
+  const[showAllNat,setShowAllNat]=useState(false);
+  const data=PRO_DATA[scope];
+
+  const divsFilt=data.divisions
+    ?data.divisions.filter(d=>!q||(d.division+d.name+d.lga).toLowerCase().includes(q.toLowerCase()))
+    :[];
+  const cmdFilt=data.command
+    ?data.command.filter(c=>!q||(c.role+c.name).toLowerCase().includes(q.toLowerCase()))
+    :[];
+  const natFilt=data.zones
+    ?data.zones.filter(z=>!q||(z.zone+z.officer+z.stateHQ).toLowerCase().includes(q.toLowerCase()))
+    :[];
+
+  const divsToShow=showAllDiv||q?divsFilt:divsFilt.slice(0,DIV_INITIAL);
+  const natToShow=showAllNat||q?natFilt:natFilt.slice(0,DIV_INITIAL);
+
+  /* tier colours */
+  const tierColour={command:"#1e3a5f",national:"#7c3aed"};
+
+  return(
+    <div className="sec" style={{paddingTop:"4px"}}>
+      {/* Header */}
+      <div style={{marginBottom:"10px"}}>
+        <p style={{fontSize:"10px",fontWeight:"700",color:"#94a3b8",letterSpacing:"1.5px",textTransform:"uppercase",marginBottom:"3px"}}>NPF PRO OFFICERS</p>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:"8px",flexWrap:"wrap"}}>
+          <h2 style={{fontSize:m?"17px":"22px",fontWeight:"800",color:"#0f172a"}}>Police PRO Contacts</h2>
+          <div style={{display:"flex",gap:"4px",background:"#f1f5f9",borderRadius:"8px",padding:"3px"}}>
+            {[{k:"lagos",l:"🟢 Lagos"},{k:"national",l:"🇳🇬 Nigeria"}].map(s=>(
+              <button key={s.k} onClick={()=>{setScope(s.k);setQ("");setShowAllDiv(false);setShowAllNat(false);}} style={{background:scope===s.k?"#1e3a5f":"none",color:scope===s.k?"white":"#64748b",border:"none",borderRadius:"6px",padding:"6px 10px",fontWeight:"700",fontSize:"11px",whiteSpace:"nowrap"}}>{s.l}</button>
+            ))}
+          </div>
+        </div>
+        <p style={{fontSize:"11px",color:"#94a3b8",marginTop:"3px"}}>📞 Call &nbsp;·&nbsp; ✉️ SMS &nbsp;·&nbsp; 💬 WhatsApp — tap any button to reach instantly</p>
+      </div>
+
+      {/* Search */}
+      <div style={{position:"relative",marginBottom:"10px"}}>
+        <span style={{position:"absolute",left:"12px",top:"50%",transform:"translateY(-50%)",fontSize:"14px",color:"#94a3b8"}}>🔍</span>
+        <input className="pro-search" value={q} onChange={e=>setQ(e.target.value)} placeholder={scope==="lagos"?"Search LGA, division, name...":"Search state, zone, officer..."}/>
+      </div>
+
+      {/* LAGOS */}
+      {scope==="lagos"&&(
         <div>
-          <div style={{color:"white",fontWeight:"700",fontSize:"16px",lineHeight:1}}>RePolice</div>
-          <div style={{color:"#94a3b8",fontSize:"9px",letterSpacing:"1.5px",textTransform:"uppercase"}}>SECURE REPORT PORTAL</div>
+          {/* Command / Leadership */}
+          {cmdFilt.length>0&&(
+            <div style={{marginBottom:"8px"}}>
+              <div style={{fontSize:"10px",fontWeight:"700",color:"#94a3b8",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"5px"}}>Command & Spokespersons</div>
+              <div style={{display:"flex",flexDirection:"column",gap:"5px"}}>
+                {cmdFilt.map((c,i)=>(
+                  <div key={i} style={{background:"white",border:"1px solid #bfdbfe",borderRadius:"10px",padding:"10px 12px",display:"flex",alignItems:"center",gap:"10px",borderLeft:`4px solid ${tierColour[c.tier]||"#1e3a5f"}`}}>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:"9px",fontWeight:"700",color:tierColour[c.tier]||"#1e3a5f",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:"1px"}}>{c.role}</div>
+                      <div style={{fontWeight:"700",fontSize:"12px",color:"#0f172a"}}>{c.name}</div>
+                      <div style={{fontSize:"10px",color:"#94a3b8",fontFamily:"monospace",marginTop:"1px"}}>{c.phone}</div>
+                    </div>
+                    <ContactBtns wa={c.wa} label={encodeURIComponent(c.role)}/>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Divisions */}
+          {divsToShow.length>0&&(
+            <div>
+              <div style={{fontSize:"10px",fontWeight:"700",color:"#94a3b8",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"5px"}}>Divisional DPOs / Commanders</div>
+              <div style={{display:"flex",flexDirection:"column",gap:"5px"}}>
+                {divsToShow.map((d,i)=>(
+                  <div key={i} style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"10px",padding:"10px 12px",display:"flex",alignItems:"center",gap:"10px",borderLeft:"3px solid #e2e8f0"}}>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{display:"flex",alignItems:"center",gap:"5px",flexWrap:"wrap",marginBottom:"1px"}}>
+                        <span style={{fontWeight:"700",fontSize:"12px",color:"#0f172a"}}>{d.division}</span>
+                        <span style={{fontSize:"9px",background:"#f1f5f9",color:"#64748b",borderRadius:"4px",padding:"1px 5px",fontWeight:"600"}}>{d.lga}</span>
+                      </div>
+                      <div style={{fontSize:"11px",color:"#374151",fontWeight:"600"}}>{d.name}</div>
+                      <div style={{fontSize:"10px",color:"#94a3b8",fontFamily:"monospace"}}>{d.phone}</div>
+                    </div>
+                    <ContactBtns wa={d.wa} label="DPO"/>
+                  </div>
+                ))}
+              </div>
+              {!q&&divsFilt.length>DIV_INITIAL&&(
+                <button onClick={()=>setShowAllDiv(!showAllDiv)} style={{width:"100%",marginTop:"8px",background:"white",border:"1px solid #e2e8f0",borderRadius:"8px",padding:"10px",fontWeight:"700",fontSize:"12px",color:"#1e3a5f",display:"flex",alignItems:"center",justifyContent:"center",gap:"5px"}}>
+                  {showAllDiv?`▲ Show less`:`▼ Show all ${divsFilt.length} divisions (${divsFilt.length-DIV_INITIAL} more)`}
+                </button>
+              )}
+            </div>
+          )}
+          {cmdFilt.length===0&&divsToShow.length===0&&<div style={{textAlign:"center",color:"#94a3b8",fontSize:"13px",padding:"20px"}}>No results for "{q}"</div>}
+        </div>
+      )}
+
+      {/* NATIONAL */}
+      {scope==="national"&&(
+        <div>
+          <div style={{fontSize:"10px",fontWeight:"700",color:"#94a3b8",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"5px"}}>Zonal Commands — All 36 States + FCT</div>
+          <div style={{display:"flex",flexDirection:"column",gap:"5px"}}>
+            {natToShow.map((z,i)=>(
+              <div key={i} style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"10px",padding:"10px 12px",display:"flex",alignItems:"center",gap:"10px",borderLeft:"3px solid #16a34a"}}>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{display:"flex",alignItems:"center",gap:"5px",flexWrap:"wrap",marginBottom:"1px"}}>
+                    <span style={{fontWeight:"700",fontSize:"12px",color:"#0f172a"}}>{z.zone}</span>
+                    <span style={{fontSize:"9px",background:"#f0fdf4",color:"#16a34a",borderRadius:"4px",padding:"1px 5px",fontWeight:"600"}}>{z.stateHQ}</span>
+                  </div>
+                  <div style={{fontSize:"11px",color:"#374151",fontWeight:"600"}}>{z.officer}</div>
+                  <div style={{fontSize:"10px",color:"#94a3b8",fontFamily:"monospace"}}>{z.phone}</div>
+                </div>
+                <ContactBtns wa={z.wa} label="PRO"/>
+              </div>
+            ))}
+          </div>
+          {!q&&natFilt.length>DIV_INITIAL&&(
+            <button onClick={()=>setShowAllNat(!showAllNat)} style={{width:"100%",marginTop:"8px",background:"white",border:"1px solid #e2e8f0",borderRadius:"8px",padding:"10px",fontWeight:"700",fontSize:"12px",color:"#16a34a",display:"flex",alignItems:"center",justifyContent:"center",gap:"5px"}}>
+              {showAllNat?`▲ Show less`:`▼ Show all ${natFilt.length} zones (${natFilt.length-DIV_INITIAL} more)`}
+            </button>
+          )}
+          {natFilt.length===0&&<div style={{textAlign:"center",color:"#94a3b8",fontSize:"13px",padding:"20px"}}>No results for "{q}"</div>}
+        </div>
+      )}
+
+      <div style={{textAlign:"center",marginTop:"8px",fontSize:"10px",color:"#94a3b8"}}>
+        {scope==="lagos"?`${divsToShow.length}${showAllDiv||q?"":"+4"} of ${divsFilt.length+(data.command?data.command.length:0)} contacts shown`:`${natToShow.length} of ${natFilt.length} zones shown`}
+      </div>
+    </div>
+  );
+}
+
+/* ── LIVE RECORDER ── */
+function LiveRecorder({compact=false,onRecorded}){
+  const videoRef=useRef(null);
+  const mediaRef=useRef(null);
+  const chunksRef=useRef([]);
+  const[state,setState]=useState("idle"); // idle | requesting | live | recorded | error
+  const[elapsed,setElapsed]=useState(0);
+  const[blobUrl,setBlobUrl]=useState(null);
+  const timerRef=useRef(null);
+
+  async function startCamera(){
+    setState("requesting");
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+      videoRef.current.srcObject=stream;
+      videoRef.current.play();
+      setState("live");
+      // start MediaRecorder
+      const mr=new MediaRecorder(stream,{mimeType:MediaRecorder.isTypeSupported("video/webm;codecs=vp9")?"video/webm;codecs=vp9":"video/webm"});
+      mediaRef.current=mr;
+      chunksRef.current=[];
+      mr.ondataavailable=e=>{if(e.data.size>0)chunksRef.current.push(e.data);};
+      mr.onstop=()=>{
+        const blob=new Blob(chunksRef.current,{type:"video/webm"});
+        const url=URL.createObjectURL(blob);
+        setBlobUrl(url);
+        setState("recorded");
+        if(onRecorded)onRecorded(blob);
+      };
+      mr.start(500);
+      // elapsed timer
+      setElapsed(0);
+      timerRef.current=setInterval(()=>setElapsed(p=>p+1),1000);
+    }catch(e){setState("error");}
+  }
+
+  function stopRecording(){
+    if(timerRef.current)clearInterval(timerRef.current);
+    if(mediaRef.current&&mediaRef.current.state!=="inactive")mediaRef.current.stop();
+    if(videoRef.current&&videoRef.current.srcObject){
+      videoRef.current.srcObject.getTracks().forEach(t=>t.stop());
+      videoRef.current.srcObject=null;
+    }
+  }
+
+  function reset(){
+    stopRecording();
+    setBlobUrl(null);
+    setElapsed(0);
+    setState("idle");
+  }
+
+  function fmtTime(s){return`${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;}
+
+  if(compact){
+    // Compact inline version for report form
+    return(
+      <div style={{border:"1px solid #e2e8f0",borderRadius:"10px",overflow:"hidden",marginBottom:"16px"}}>
+        <div style={{background:"#0f172a",padding:"9px 13px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <div style={{display:"flex",alignItems:"center",gap:"7px"}}>
+            <span style={{fontSize:"13px"}}>🎥</span>
+            <span style={{color:"white",fontWeight:"700",fontSize:"12px"}}>Live Video Evidence</span>
+            <span style={{fontSize:"10px",background:"#1e293b",color:"#94a3b8",borderRadius:"4px",padding:"1px 6px",fontWeight:"600"}}>Optional</span>
+          </div>
+          {state==="live"&&<span style={{fontSize:"11px",color:"#ef4444",fontWeight:"700",display:"flex",alignItems:"center",gap:"4px"}}><span style={{width:"6px",height:"6px",borderRadius:"50%",background:"#ef4444",display:"inline-block",animation:"pulse 1s infinite"}}></span>REC {fmtTime(elapsed)}</span>}
+          {state==="recorded"&&<span style={{fontSize:"11px",color:"#22c55e",fontWeight:"700"}}>✓ Saved {fmtTime(elapsed)}</span>}
+        </div>
+        <div style={{background:"#0f172a",position:"relative"}}>
+          <video ref={videoRef} autoPlay muted playsInline style={{width:"100%",maxHeight:"160px",objectFit:"cover",display:state==="live"?"block":"none"}}/>
+          {state==="recorded"&&blobUrl&&<video src={blobUrl} controls style={{width:"100%",maxHeight:"160px",objectFit:"cover"}}/>}
+          {(state==="idle"||state==="requesting"||state==="error")&&(
+            <div style={{minHeight:"80px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"14px",gap:"7px"}}>
+              {state==="error"?<><span style={{fontSize:"22px"}}>🚫</span><p style={{color:"#94a3b8",fontSize:"11px",textAlign:"center"}}>Camera access denied. You can still submit without video.</p></>
+              :<><span style={{fontSize:"22px",color:"#475569"}}>📷</span><p style={{color:"#94a3b8",fontSize:"11px"}}>No video attached yet</p></>}
+            </div>
+          )}
+        </div>
+        <div style={{padding:"8px 10px",background:"#f8fafc",display:"flex",gap:"6px"}}>
+          {state==="idle"&&<button onClick={startCamera} style={{flex:1,background:"#ef4444",color:"white",border:"none",borderRadius:"7px",padding:"9px",fontWeight:"700",fontSize:"12px"}}>🔴 Start Recording</button>}
+          {state==="requesting"&&<button disabled style={{flex:1,background:"#94a3b8",color:"white",border:"none",borderRadius:"7px",padding:"9px",fontWeight:"700",fontSize:"12px"}}>Requesting camera…</button>}
+          {state==="live"&&<><button onClick={stopRecording} style={{flex:1,background:"#0f172a",color:"white",border:"none",borderRadius:"7px",padding:"9px",fontWeight:"700",fontSize:"12px"}}>⏹ Stop</button></>}
+          {state==="recorded"&&<><a href={blobUrl} download="evidence.webm" style={{flex:1,background:"#22c55e",color:"white",border:"none",borderRadius:"7px",padding:"9px",fontWeight:"700",fontSize:"12px",textAlign:"center",textDecoration:"none"}}>⬇ Save</a><button onClick={reset} style={{background:"white",color:"#374151",border:"1px solid #d1d5db",borderRadius:"7px",padding:"9px 12px",fontWeight:"600",fontSize:"12px"}}>Re-record</button></>}
+          {state==="error"&&<button onClick={()=>setState("idle")} style={{flex:1,background:"#f1f5f9",color:"#374151",border:"none",borderRadius:"7px",padding:"9px",fontWeight:"600",fontSize:"12px"}}>Try Again</button>}
         </div>
       </div>
-      <div style={{display:"flex",alignItems:"center",gap:"16px"}}>
-        <button onClick={onHome} style={{background:"none",border:"none",color:"white",fontWeight:"600",fontSize:"13px"}}>Home</button>
-        <button onClick={onMyReports} style={{background:"none",border:"none",color:"#94a3b8",fontSize:"13px"}}>My Reports</button>
-        <button onClick={onPoliceLogin} style={{background:"none",border:"1px solid #334155",color:"#94a3b8",borderRadius:"6px",padding:"6px 14px",fontSize:"12px"}}>👮 Police Login</button>
-        <button onClick={onAdminLogin} style={{background:"none",border:"1px solid #334155",color:"#94a3b8",borderRadius:"6px",padding:"6px 14px",fontSize:"12px"}}>🛡️ Admin Login</button>
-        <button onClick={onReportCrime} style={{background:"#f59e0b",color:"#0f172a",border:"none",borderRadius:"6px",padding:"8px 18px",fontWeight:"700",fontSize:"13px"}}>Report Crime</button>
-      </div>
-    </nav>
-  );
-}
+    );
+  }
 
-// ── LOGIN MODAL ────────────────────────────────────────────────────────────
-function LoginModal({role,onSuccess,onClose}){
-  const [badge,setBadge]=useState(""); const [otp,setOtp]=useState("");
-  const [step,setStep]=useState(1); const [loading,setLoading]=useState(false); const [error,setError]=useState("");
-  const CREDS=role==="police"?{badge:"LG-4421",otp:"112112"}:{badge:"ADMIN-01",otp:"999999"};
-  async function handleBadge(){
-    if(!badge){setError("Enter your ID");return;} setLoading(true); setError("");
-    await new Promise(r=>setTimeout(r,700)); setLoading(false);
-    if(badge.toUpperCase()!==CREDS.badge){setError("ID not found");return;} setStep(2);
-  }
-  async function handleOtp(){
-    if(!otp){setError("Enter OTP");return;} setLoading(true); setError("");
-    await new Promise(r=>setTimeout(r,700)); setLoading(false);
-    if(otp!==CREDS.otp){setError("Invalid OTP — try "+CREDS.otp);return;} onSuccess();
-  }
+  // Full homepage widget version
   return(
-    <Modal onClose={onClose}>
-      <div style={{padding:"36px 40px"}}>
-        <div style={{fontSize:"32px",marginBottom:"8px"}}>{role==="police"?"👮":"🛡️"}</div>
-        <h2 style={{fontSize:"20px",fontWeight:"800",color:"#0f172a",marginBottom:"4px"}}>{role==="police"?"Police Officer Login":"Admin Panel Login"}</h2>
-        <p style={{fontSize:"13px",color:"#94a3b8",marginBottom:"28px"}}>{step===1?`Enter your ${role==="police"?"Badge ID":"Admin ID"}`:"Enter OTP sent to your registered number"}</p>
-        {step===1?(
+    <div style={{borderRadius:"12px",overflow:"hidden",border:"1px solid #e2e8f0",background:"white"}}>
+      <div style={{background:"#0f172a",padding:"11px 14px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+        <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
+          <span style={{fontSize:"15px"}}>🎥</span>
+          <span style={{color:"white",fontWeight:"700",fontSize:"13px"}}>Live Incident Recorder</span>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:"6px"}}>
+          {state==="live"&&<><span style={{width:"7px",height:"7px",borderRadius:"50%",background:"#ef4444",display:"inline-block",animation:"pulse 1s infinite"}}></span><span style={{color:"#ef4444",fontSize:"11px",fontWeight:"700"}}>LIVE {fmtTime(elapsed)}</span></>}
+          {state==="recorded"&&<span style={{color:"#22c55e",fontSize:"11px",fontWeight:"700"}}>✓ RECORDED</span>}
+          {state==="idle"&&<span style={{color:"#475569",fontSize:"10px"}}>STANDBY</span>}
+        </div>
+      </div>
+
+      {/* Video viewport */}
+      <div style={{background:"#020617",position:"relative",minHeight:"180px",display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <video ref={videoRef} autoPlay muted playsInline style={{width:"100%",maxHeight:"220px",objectFit:"cover",display:state==="live"?"block":"none"}}/>
+        {state==="recorded"&&blobUrl&&<video src={blobUrl} controls style={{width:"100%",maxHeight:"220px",objectFit:"cover"}}/>}
+        {(state==="idle"||state==="requesting")&&(
+          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:"8px",padding:"24px"}}>
+            <div style={{width:"52px",height:"52px",borderRadius:"50%",border:"2px solid #1e293b",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"22px"}}>📷</div>
+            <p style={{color:"#475569",fontSize:"12px",textAlign:"center",lineHeight:1.5}}>Tap Record to capture live video evidence{"\n"}directly from the scene</p>
+          </div>
+        )}
+        {state==="error"&&(
+          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:"6px",padding:"20px"}}>
+            <span style={{fontSize:"28px"}}>🚫</span>
+            <p style={{color:"#94a3b8",fontSize:"12px",textAlign:"center"}}>Camera access denied or unavailable</p>
+          </div>
+        )}
+        {state==="live"&&(
+          <div style={{position:"absolute",top:"8px",left:"8px",background:"rgba(239,68,68,.85)",borderRadius:"5px",padding:"3px 8px",display:"flex",alignItems:"center",gap:"4px"}}>
+            <span style={{width:"6px",height:"6px",borderRadius:"50%",background:"white",display:"inline-block",animation:"pulse 1s infinite"}}></span>
+            <span style={{color:"white",fontSize:"10px",fontWeight:"700"}}>REC</span>
+          </div>
+        )}
+      </div>
+
+      {/* Controls */}
+      <div style={{padding:"10px 12px",background:"#f8fafc",display:"flex",gap:"7px",alignItems:"center"}}>
+        {state==="idle"&&<button onClick={startCamera} style={{flex:1,background:"#ef4444",color:"white",border:"none",borderRadius:"8px",padding:"11px",fontWeight:"700",fontSize:"13px",display:"flex",alignItems:"center",justifyContent:"center",gap:"6px"}}><span style={{width:"10px",height:"10px",borderRadius:"50%",background:"white",display:"inline-block"}}></span>Record Now</button>}
+        {state==="requesting"&&<button disabled style={{flex:1,background:"#94a3b8",color:"white",border:"none",borderRadius:"8px",padding:"11px",fontWeight:"700",fontSize:"13px"}}>Requesting camera…</button>}
+        {state==="live"&&<><button onClick={stopRecording} style={{flex:1,background:"#0f172a",color:"white",border:"none",borderRadius:"8px",padding:"11px",fontWeight:"700",fontSize:"13px"}}>⏹ Stop Recording</button></>}
+        {state==="recorded"&&(
           <>
-            <label style={{fontSize:"13px",fontWeight:"600",color:"#374151",display:"block",marginBottom:"6px"}}>{role==="police"?"Badge ID":"Admin ID"}</label>
-            <input value={badge} onChange={e=>setBadge(e.target.value)} placeholder={role==="police"?"e.g. LG-4421":"e.g. ADMIN-01"}
-              style={{width:"100%",padding:"11px 14px",border:"1px solid #d1d5db",borderRadius:"8px",fontSize:"14px",marginBottom:"8px",outline:"none"}} />
-            {error&&<p style={{color:"#ef4444",fontSize:"12px",marginBottom:"8px"}}>{error}</p>}
-            <p style={{fontSize:"11px",color:"#94a3b8",marginBottom:"20px"}}>Demo ID: <strong>{CREDS.badge}</strong></p>
-            <button onClick={handleBadge} style={{width:"100%",background:"#0f172a",color:"white",border:"none",borderRadius:"8px",padding:"13px",fontWeight:"700",fontSize:"14px"}}>{loading?"Verifying...":"Continue"}</button>
-          </>
-        ):(
-          <>
-            <label style={{fontSize:"13px",fontWeight:"600",color:"#374151",display:"block",marginBottom:"6px"}}>OTP Code</label>
-            <input value={otp} onChange={e=>setOtp(e.target.value)} placeholder="6-digit OTP"
-              style={{width:"100%",padding:"11px 14px",border:"1px solid #d1d5db",borderRadius:"8px",fontSize:"18px",marginBottom:"8px",outline:"none",letterSpacing:"8px",textAlign:"center"}} />
-            {error&&<p style={{color:"#ef4444",fontSize:"12px",marginBottom:"8px"}}>{error}</p>}
-            <p style={{fontSize:"11px",color:"#94a3b8",marginBottom:"20px"}}>Demo OTP: <strong>{CREDS.otp}</strong></p>
-            <button onClick={handleOtp} style={{width:"100%",background:role==="police"?"#1d4ed8":"#7c3aed",color:"white",border:"none",borderRadius:"8px",padding:"13px",fontWeight:"700",fontSize:"14px"}}>{loading?"Authenticating...":"Login"}</button>
+            <a href={blobUrl} download="incident-evidence.webm" style={{flex:1,background:"#22c55e",color:"white",border:"none",borderRadius:"8px",padding:"11px",fontWeight:"700",fontSize:"13px",textAlign:"center",textDecoration:"none",display:"flex",alignItems:"center",justifyContent:"center",gap:"5px"}}>⬇ Download</a>
+            <button onClick={reset} style={{background:"white",color:"#374151",border:"1px solid #d1d5db",borderRadius:"8px",padding:"11px 14px",fontWeight:"600",fontSize:"13px"}}>🔄</button>
           </>
         )}
-        <button onClick={onClose} style={{width:"100%",background:"none",border:"none",color:"#94a3b8",fontSize:"13px",marginTop:"12px"}}>Cancel</button>
+        {state==="error"&&<button onClick={()=>setState("idle")} style={{flex:1,background:"#f1f5f9",color:"#374151",border:"none",borderRadius:"8px",padding:"11px",fontWeight:"600",fontSize:"13px"}}>Retry</button>}
       </div>
-    </Modal>
-  );
-}
-
-// ── LIVE MONITOR ───────────────────────────────────────────────────────────
-function LiveMonitor(){
-  return(
-    <div style={{background:"#0f172a",borderRadius:"12px",padding:"16px",color:"white",width:"220px",minHeight:"320px",display:"flex",flexDirection:"column",flexShrink:0}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"12px"}}>
-        <span style={{fontSize:"11px",fontWeight:"700",letterSpacing:"1px",color:"#94a3b8"}}>LIVE MONITOR 01</span>
-        <span style={{fontSize:"10px",color:"#22c55e",display:"flex",alignItems:"center",gap:"4px"}}>
-          <span style={{width:"6px",height:"6px",borderRadius:"50%",background:"#22c55e",display:"inline-block",animation:"pulse 2s infinite"}}></span>ACTIVE
-        </span>
-      </div>
-      <div style={{background:"#1e293b",borderRadius:"8px",flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"16px",marginBottom:"12px",minHeight:"160px"}}>
-        <div style={{width:"28px",height:"28px",border:"2px solid #475569",borderRadius:"2px",marginBottom:"16px"}}></div>
-        <p style={{fontSize:"13px",fontWeight:"600",textAlign:"center",marginBottom:"6px"}}>Sensor Activation Required</p>
-        <p style={{fontSize:"11px",color:"#94a3b8",textAlign:"center",marginBottom:"14px"}}>Access camera and microphone to enable live AI surveillance features.</p>
-        <button style={{background:"#3b82f6",color:"white",border:"none",borderRadius:"6px",padding:"8px 12px",fontWeight:"600",fontSize:"12px",width:"100%"}}>Enable Surveillance</button>
-      </div>
-      <div>
-        <div style={{display:"flex",justifyContent:"space-between",marginBottom:"6px"}}>
-          <span style={{fontSize:"10px",color:"#94a3b8",letterSpacing:"1px"}}>SYSTEM EVENTS</span>
-          <span style={{fontSize:"9px",color:"#64748b"}}>SEE ALL ONLINE</span>
-        </div>
-        <div style={{fontSize:"11px",color:"#64748b",fontStyle:"italic"}}>No activity detected...</div>
-      </div>
-      <div style={{marginTop:"auto",paddingTop:"10px",borderTop:"1px solid #1e293b"}}>
-        <div style={{fontSize:"9px",color:"#475569",textAlign:"center"}}>Tactical Feed // AES-256 Encrypted Stream</div>
-      </div>
+      <div style={{padding:"6px 12px 10px",fontSize:"10px",color:"#94a3b8",textAlign:"center"}}>Video is stored locally on your device. Attach it when filing your report.</div>
     </div>
   );
 }
 
-// ── HOME PAGE ──────────────────────────────────────────────────────────────
-function HomePage({onReportCrime}){
+/* ── HOME ── */
+function HomePage({onReport}){
+  const m=useIsMobile();
+  const[showHow,setShowHow]=useState(false);
   return(
-    <div style={{background:"#f8fafc",minHeight:"calc(100vh - 60px)"}}>
-      <div style={{padding:"60px 48px 40px",display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:"32px"}}>
-        <div style={{maxWidth:"520px"}}>
-          <h1 style={{fontSize:"46px",fontWeight:"800",color:"#0f172a",lineHeight:1.15,marginBottom:"20px"}}>
-            Protecting <span style={{color:"#3b82f6"}}>Nigeria</span><br/>Through Digital Vigilance.
-          </h1>
-          <p style={{color:"#64748b",fontSize:"16px",lineHeight:1.7,marginBottom:"32px"}}>
-            RePolice is a secure crime reporting App. Instantly record incidents with GPS verification and real-time AI monitoring.
-          </p>
-          <div style={{display:"flex",gap:"16px",marginBottom:"36px"}}>
-            <button onClick={onReportCrime} style={{background:"#0f172a",color:"white",border:"none",borderRadius:"8px",padding:"14px 28px",fontWeight:"700",fontSize:"15px"}}>File Official Report</button>
-            <button style={{background:"white",color:"#ef4444",border:"2px solid #fca5a5",borderRadius:"8px",padding:"14px 28px",fontWeight:"700",fontSize:"15px"}}>🆘 Emergency SOS 112</button>
+    <div style={{background:"#f8fafc",minHeight:"calc(100vh - 60px)",animation:"fadeUp .3s ease"}}>
+
+      {/* ── HERO ── */}
+      <div className="hero-row">
+        <div style={{flex:1,minWidth:0}}>
+          {/* Testing badge */}
+          <div style={{display:"inline-flex",alignItems:"center",gap:"6px",background:"#fff7ed",border:"1px solid #fed7aa",borderRadius:"20px",padding:"4px 10px",marginBottom:m?"10px":"14px"}}>
+            <span style={{width:"6px",height:"6px",borderRadius:"50%",background:"#f59e0b",display:"inline-block",animation:"pulse 2s infinite"}}></span>
+            <span style={{fontSize:"11px",color:"#92400e",fontWeight:"600"}}>🧪 Beta · Pending NPF Adoption</span>
           </div>
-          <div style={{display:"flex",gap:"16px"}}>
+          <h1 style={{fontSize:m?"24px":"46px",fontWeight:"800",color:"#0f172a",lineHeight:1.15,marginBottom:m?"6px":"12px"}}>
+            Protecting <span style={{color:"#3b82f6"}}>Nigeria</span>{m?<><br/>Through Digital<br/>Vigilance.</>:<><br/>Through Digital Vigilance.</>}
+          </h1>
+          {m?(
+            <p style={{color:"#64748b",fontSize:"13px",lineHeight:1.5,marginBottom:"12px"}}>
+              Nigeria's first AI-powered crime reporting app — record, report and reach police instantly.
+            </p>
+          ):(
+            <p style={{color:"#64748b",fontSize:"16px",lineHeight:1.7,marginBottom:"22px",maxWidth:"480px"}}>
+              Nigeria's first AI-powered crime reporting app. Record live video, file encrypted reports and reach police instantly — built for the era of State Policing.
+            </p>
+          )}
+
+          {/* Stats strip — 2 cols mobile */}
+          <div style={{display:"grid",gridTemplateColumns:m?"1fr 1fr":"repeat(4,1fr)",background:"#f1f5f9",borderRadius:"8px",overflow:"hidden",marginBottom:m?"12px":"24px"}}>
+            {[{v:"2",l:"Reports Filed"},{v:"—",l:"Resolution Rate"},{v:"—",l:"Officers Active"},{v:"—",l:"Avg Response"}].map((s,i)=>(
+              <div key={i} style={{padding:m?"9px 6px":"13px 16px",textAlign:"center",borderRight:m?(i===0||i===2?"1px solid #e2e8f0":"none"):(i<3?"1px solid #e2e8f0":"none")}}>
+                <div style={{fontSize:m?"14px":"19px",fontWeight:"800",color:"#0f172a"}}>{s.v}</div>
+                <div style={{fontSize:"9px",color:"#94a3b8",marginTop:"1px"}}>{s.l}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="hero-btns">
+            <button onClick={onReport} style={{background:"#0f172a",color:"white",border:"none",borderRadius:"8px",padding:m?"13px 10px":"14px 26px",fontWeight:"700",fontSize:m?"13px":"14px"}}>📋 File Report</button>
+            <button onClick={()=>window.open("tel:112")} style={{background:"white",color:"#ef4444",border:"2px solid #fca5a5",borderRadius:"8px",padding:m?"13px 10px":"14px 26px",fontWeight:"700",fontSize:m?"13px":"14px"}}>🆘 SOS 112</button>
+          </div>
+
+          {/* Feature chips — desktop only via CSS */}
+          <div className="hero-feats">
             {[{icon:"📍",title:"Safe City Initiative",sub:"GPS Enhanced Response",bg:"#dcfce7"},{icon:"🔒",title:"Identity Guard",sub:"Encrypted Anonymous Reporting",bg:"#fee2e2"}].map(f=>(
-              <div key={f.title} style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"10px",padding:"14px 18px",display:"flex",alignItems:"center",gap:"12px",flex:1}}>
-                <div style={{width:"36px",height:"36px",borderRadius:"50%",background:f.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"16px"}}>{f.icon}</div>
+              <div key={f.title} style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"10px",padding:"13px 15px",display:"flex",alignItems:"center",gap:"10px",flex:1}}>
+                <div style={{width:"34px",height:"34px",borderRadius:"50%",background:f.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"16px",flexShrink:0}}>{f.icon}</div>
                 <div><div style={{fontWeight:"700",fontSize:"13px",color:"#0f172a"}}>{f.title}</div><div style={{fontSize:"11px",color:"#94a3b8"}}>{f.sub}</div></div>
               </div>
             ))}
           </div>
         </div>
-        <LiveMonitor/>
+        <div className="live-monitor-wrap"><LiveMonitor/></div>
       </div>
 
-      <div style={{padding:"0 48px 48px"}}>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"20px"}}>
-          {[{icon:"🎥",title:"Evidence Vault",desc:"Recorded surveillance and uploaded media are stored in a tamper-proof forensic-grade database."},{icon:"🚨",title:"Rapid Dispatch",desc:"Incident location and severity are automatically triaged for the nearest patrol units."},{icon:"🤖",title:"AI Triage",desc:"Real-time visual analysis of threats helps prioritize critical life-saving emergencies."}].map(f=>(
-            <div key={f.title} style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"12px",padding:"28px 24px"}}>
-              <div style={{fontSize:"32px",marginBottom:"14px"}}>{f.icon}</div>
-              <div style={{fontWeight:"700",fontSize:"17px",color:"#0f172a",marginBottom:"8px"}}>{f.title}</div>
-              <div style={{fontSize:"13px",color:"#64748b",lineHeight:1.6}}>{f.desc}</div>
+      {/* ── QUICK FEATURES (mobile: compact horizontal chips, desktop: grid) ── */}
+      <div className="sec">
+        {m?(
+          <div style={{display:"flex",gap:"8px",overflowX:"auto",paddingBottom:"4px",scrollbarWidth:"none"}}>
+            {[{icon:"🎥",title:"Evidence Vault"},{icon:"🚨",title:"Rapid Dispatch"},{icon:"🤖",title:"AI Triage"},{icon:"🔒",title:"Anonymous"}].map(f=>(
+              <div key={f.title} style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"10px",padding:"10px 12px",display:"flex",alignItems:"center",gap:"7px",flexShrink:0,whiteSpace:"nowrap"}}>
+                <span style={{fontSize:"16px"}}>{f.icon}</span>
+                <span style={{fontWeight:"600",fontSize:"12px",color:"#0f172a"}}>{f.title}</span>
+              </div>
+            ))}
+          </div>
+        ):(
+          <>
+            <p style={{fontSize:"11px",fontWeight:"700",color:"#94a3b8",letterSpacing:"1.5px",textTransform:"uppercase",marginBottom:"12px"}}>PLATFORM FEATURES</p>
+            <div className="grid3">
+              {[{icon:"🎥",title:"Evidence Vault",desc:"Recorded surveillance stored in a tamper-proof forensic-grade database."},{icon:"🚨",title:"Rapid Dispatch",desc:"Incident location auto-triaged to nearest patrol units."},{icon:"🤖",title:"AI Triage",desc:"Real-time analysis prioritizes critical emergencies."}].map(f=>(
+                <div key={f.title} style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"12px",padding:"24px 20px"}}>
+                  <div style={{fontSize:"26px",marginBottom:"10px"}}>{f.icon}</div>
+                  <div style={{fontWeight:"700",fontSize:"15px",color:"#0f172a",marginBottom:"6px"}}>{f.title}</div>
+                  <div style={{fontSize:"13px",color:"#64748b",lineHeight:1.6}}>{f.desc}</div>
+                </div>
+              ))}
             </div>
-          ))}
+          </>
+        )}
+      </div>
+
+      {/* ── HOW IT WORKS — collapsible on mobile ── */}
+      <div className="sec">
+        {m?(
+          <>
+            <button onClick={()=>setShowHow(!showHow)} style={{width:"100%",background:"white",border:"1px solid #e2e8f0",borderRadius:"10px",padding:"13px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",fontWeight:"700",fontSize:"14px",color:"#0f172a"}}>
+              <span>📋 How Reporting Works</span>
+              <span style={{color:"#94a3b8",fontSize:"16px"}}>{showHow?"−":"+"}</span>
+            </button>
+            {showHow&&(
+              <div style={{marginTop:"8px",display:"flex",flexDirection:"column",gap:"7px"}}>
+                {[{n:"1",icon:"📝",title:"File Your Report",desc:"Select crime type, urgency & optionally go anonymous."},{n:"2",icon:"📍",title:"GPS Verified",desc:"Location captured. Add photos or video as evidence."},{n:"3",icon:"🚔",title:"Police Dispatched",desc:"Nearest officer notified and dispatched instantly."}].map(s=>(
+                  <div key={s.n} style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"10px",padding:"12px 14px",display:"flex",gap:"12px",alignItems:"flex-start"}}>
+                    <div style={{width:"26px",height:"26px",background:"#0f172a",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",color:"white",fontWeight:"800",fontSize:"12px",flexShrink:0}}>{s.n}</div>
+                    <div>
+                      <div style={{fontWeight:"700",fontSize:"13px",color:"#0f172a",marginBottom:"2px"}}>{s.icon} {s.title}</div>
+                      <div style={{fontSize:"12px",color:"#64748b",lineHeight:1.5}}>{s.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        ):(
+          <>
+            <p style={{fontSize:"11px",fontWeight:"700",color:"#94a3b8",letterSpacing:"1.5px",textTransform:"uppercase",marginBottom:"6px"}}>HOW IT WORKS</p>
+            <h2 style={{fontSize:"23px",fontWeight:"800",color:"#0f172a",marginBottom:"18px"}}>Report in 3 Simple Steps</h2>
+            <div className="how-grid">
+              {[{step:"01",icon:"📝",title:"File Your Report",desc:"Describe the incident, select crime type and urgency. Optionally report anonymously."},{step:"02",icon:"📍",title:"GPS Verification",desc:"Location is automatically captured. Upload photos or videos as evidence."},{step:"03",icon:"🚔",title:"Police Dispatched",desc:"The nearest available officer is notified and dispatched to your location."}].map(s=>(
+                <div key={s.step} style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"12px",padding:"20px 18px",position:"relative",overflow:"hidden"}}>
+                  <div style={{position:"absolute",top:"10px",right:"14px",fontSize:"32px",fontWeight:"900",color:"#f1f5f9",lineHeight:1}}>{s.step}</div>
+                  <div style={{fontSize:"26px",marginBottom:"10px"}}>{s.icon}</div>
+                  <div style={{fontWeight:"700",fontSize:"14px",color:"#0f172a",marginBottom:"5px"}}>{s.title}</div>
+                  <div style={{fontSize:"13px",color:"#64748b",lineHeight:1.6}}>{s.desc}</div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* ── ANON CTA — compact on mobile ── */}
+      <div className="sec">
+        <div style={{background:"#0f172a",borderRadius:"12px",padding:m?"14px":"26px 30px",display:"flex",alignItems:"center",gap:m?"12px":"18px",flexDirection:"row"}}>
+          <div style={{fontSize:m?"24px":"36px",flexShrink:0}}>🔒</div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontWeight:"700",fontSize:m?"13px":"18px",color:"white",marginBottom:m?"1px":"5px"}}>100% Anonymous</div>
+            <div style={{fontSize:m?"11px":"13px",color:"#94a3b8",lineHeight:1.4}}>Identity never stored. End-to-end encrypted.</div>
+          </div>
+          <button onClick={onReport} style={{background:"#f59e0b",color:"#0f172a",border:"none",borderRadius:"8px",padding:m?"10px 12px":"12px 20px",fontWeight:"700",fontSize:m?"12px":"13px",whiteSpace:"nowrap",flexShrink:0}}>Report →</button>
         </div>
       </div>
 
-      <div style={{background:"#0f172a",margin:"0 48px 0",borderRadius:"16px 16px 0 0",padding:"40px 48px",textAlign:"center"}}>
-        <h2 style={{color:"white",fontSize:"26px",fontWeight:"800",marginBottom:"14px"}}>Partnering with Communities</h2>
-        <p style={{color:"#94a3b8",fontSize:"14px",lineHeight:1.7,maxWidth:"560px",margin:"0 auto 24px"}}>
-          The RePolice initiative is part of the NPF Modernization Program. By reporting crimes digitally, you help build a data-driven security architecture for a safer Nigeria.
+      {/* ── LIVE RECORDER ── */}
+      <div className="sec">
+        <p style={{fontSize:"10px",fontWeight:"700",color:"#94a3b8",letterSpacing:"1.5px",textTransform:"uppercase",marginBottom:"6px"}}>SCENE CAPTURE</p>
+        <LiveRecorder/>
+      </div>
+
+      {/* PRO Officers Directory */}
+      <PRODirectory/>
+
+      {/* ── COMMUNITY + FAQ ── */}
+      <div className="community">
+        <h2 style={{color:"white",fontSize:m?"17px":"25px",fontWeight:"800",marginBottom:"8px"}}>Building a Safer Nigeria</h2>
+        <p style={{color:"#94a3b8",fontSize:m?"12px":"14px",lineHeight:1.6,maxWidth:"540px",margin:"0 auto 16px"}}>
+          RePolice is in testing — an independent initiative being developed for adoption by the NPF once State Police is active across Nigeria.
         </p>
-        <div style={{display:"flex",gap:"14px",justifyContent:"center"}}>
-          <button style={{background:"#f59e0b",color:"#0f172a",border:"none",borderRadius:"8px",padding:"12px 24px",fontWeight:"700",fontSize:"14px"}}>Join the Initiative</button>
-          <button style={{background:"transparent",color:"white",border:"1px solid #334155",borderRadius:"8px",padding:"12px 24px",fontWeight:"600",fontSize:"14px"}}>Learn More</button>
+        <div style={{display:"flex",gap:"8px",justifyContent:"center",flexWrap:"wrap"}}>
+          <button style={{background:"#f59e0b",color:"#0f172a",border:"none",borderRadius:"8px",padding:m?"10px 18px":"12px 22px",fontWeight:"700",fontSize:m?"12px":"13px",flex:m?"1":"none"}}>Join the Initiative</button>
+          <button style={{background:"transparent",color:"white",border:"1px solid #334155",borderRadius:"8px",padding:m?"10px 18px":"12px 22px",fontWeight:"600",fontSize:m?"12px":"13px",flex:m?"1":"none"}}>Learn More</button>
         </div>
-        <div style={{borderTop:"1px solid #1e293b",marginTop:"32px",paddingTop:"20px"}}>
-          <p style={{color:"white",fontWeight:"600",fontSize:"13px",marginBottom:"4px"}}>Nigeria Police Force - RePolice Initiative</p>
-          <p style={{color:"#64748b",fontSize:"12px"}}>© 2026 Official Digital Response Unit. For emergencies, call 112 or 911.</p>
+        {!m&&(
+          <div style={{marginTop:"28px",textAlign:"left",maxWidth:"560px",margin:"28px auto 0"}}>
+            <p style={{fontSize:"11px",fontWeight:"700",color:"#475569",letterSpacing:"1.5px",textTransform:"uppercase",marginBottom:"12px"}}>FREQUENTLY ASKED</p>
+            {[{q:"Is my identity safe when I report?",a:"Yes. Anonymous reports strip all metadata. Identified reports are only visible to assigned officers with valid badge credentials."},{q:"What happens after I file a report?",a:"The system immediately notifies the nearest on-duty officer. You receive a reference ID to track investigation progress."},{q:"Can I report from anywhere in Nigeria?",a:"Currently optimized for Lagos State. National rollout is in progress across all 36 states."}].map((f,i)=><FAQItem key={i} q={f.q} a={f.a}/>)}
+          </div>
+        )}
+        {m&&(
+          <div style={{marginTop:"16px",textAlign:"left"}}>
+            {[{q:"Is my identity safe?",a:"Yes. Anonymous reports strip all metadata. Only assigned officers with valid credentials can access identified reports."},{q:"What happens after I report?",a:"Nearest on-duty officer is notified. You get a reference ID to track progress."},{q:"Can I report from anywhere?",a:"Optimised for Lagos. National rollout across all 36 states in progress."}].map((f,i)=><FAQItem key={i} q={f.q} a={f.a}/>)}
+          </div>
+        )}
+        <div style={{borderTop:"1px solid #1e293b",marginTop:"20px",paddingTop:"14px"}}>
+          <p style={{color:"white",fontWeight:"600",fontSize:m?"12px":"13px",marginBottom:"2px"}}>RePolice — Crime Reporting Portal (Beta)</p>
+          <p style={{color:"#64748b",fontSize:m?"11px":"12px"}}>© 2026 Independent · Pending NPF adoption. Emergencies: call 112 or 911.</p>
         </div>
       </div>
+
+      <button className="fab" title="SOS" onClick={()=>window.open("tel:112")}>🆘</button>
     </div>
   );
 }
 
-// ── REPORT FORM ────────────────────────────────────────────────────────────
-function StepBar({step}){
-  return(
-    <div style={{display:"flex",height:"5px",gap:"4px",marginBottom:"28px"}}>
-      {[1,2,3].map(s=><div key={s} style={{flex:1,borderRadius:"3px",background:s<=step?"#f59e0b":"#e2e8f0",transition:"background 0.3s"}}/>)}
-    </div>
-  );
-}
+/* ── STEP BAR ── */
+function StepBar({step}){return(
+  <div style={{display:"flex",height:"5px",gap:"4px",marginBottom:"22px"}}>
+    {[1,2,3].map(s=><div key={s} style={{flex:1,borderRadius:"3px",background:s<=step?"#f59e0b":"#e2e8f0",transition:"background .3s"}}/>)}
+  </div>
+);}
 
+/* ── REPORT FORM ── */
 function ReportForm({onSuccess,onCancel}){
-  const [step,setStep]=useState(1);
-  const [crimeType,setCrimeType]=useState("Theft/Robbery");
-  const [urgency,setUrgency]=useState("Low (Non-emergency)");
-  const [description,setDescription]=useState("");
-  const [anonymous,setAnonymous]=useState(false);
-  const [submitting,setSubmitting]=useState(false);
-
-  async function handleSubmit(){
-    setSubmitting(true);
-    await new Promise(r=>setTimeout(r,1800));
-    onSuccess();
-  }
-
-  const urgencyOpts=["Low (Non-emergency)","Medium","High (Emergency)","Critical (Life-threatening)"];
-
+  const m=useIsMobile();
+  const[step,setStep]=useState(1);
+  const[crimeType,setCrimeType]=useState("Theft/Robbery");
+  const[urgency,setUrgency]=useState("Low (Non-emergency)");
+  const[description,setDescription]=useState("");
+  const[anonymous,setAnonymous]=useState(false);
+  const[submitting,setSubmitting]=useState(false);
+  async function submit(){setSubmitting(true);await new Promise(r=>setTimeout(r,1800));onSuccess();}
   return(
-    <div style={{background:"#f8fafc",minHeight:"calc(100vh - 60px)",display:"flex",justifyContent:"center",paddingTop:"40px",paddingBottom:"40px"}}>
-      <div style={{background:"white",borderRadius:"16px",border:"1px solid #e2e8f0",padding:"36px 40px",width:"100%",maxWidth:"520px",height:"fit-content"}}>
+    <div className="form-wrap">
+      <div className="form-card">
         <StepBar step={step}/>
         {step===1&&(
           <div>
-            <div style={{display:"flex",justifyContent:"space-between",marginBottom:"6px"}}>
-              <h2 style={{fontSize:"22px",fontWeight:"800",color:"#0f172a"}}>Incident Details</h2>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:"4px"}}>
+              <h2 style={{fontSize:"20px",fontWeight:"800",color:"#0f172a"}}>Incident Details</h2>
               <button onClick={onCancel} style={{background:"none",border:"none",color:"#94a3b8",fontSize:"14px"}}>Cancel</button>
             </div>
-            <p style={{fontSize:"13px",color:"#94a3b8",marginBottom:"20px"}}>Step 1 of 3</p>
-            <div onClick={()=>setAnonymous(!anonymous)} style={{display:"flex",alignItems:"center",gap:"10px",background:"#f0fdf4",border:"1px solid #bbf7d0",borderRadius:"8px",padding:"10px 14px",marginBottom:"18px",cursor:"pointer"}}>
-              <div style={{width:"18px",height:"18px",borderRadius:"4px",border:anonymous?"none":"2px solid #d1d5db",background:anonymous?"#22c55e":"white",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                {anonymous&&<span style={{color:"white",fontSize:"12px",lineHeight:1}}>✓</span>}
+            <p style={{fontSize:"12px",color:"#94a3b8",marginBottom:"18px"}}>Step 1 of 3</p>
+            <div onClick={()=>setAnonymous(!anonymous)} style={{display:"flex",alignItems:"center",gap:"10px",background:"#f0fdf4",border:"1px solid #bbf7d0",borderRadius:"8px",padding:"12px 13px",marginBottom:"16px",cursor:"pointer"}}>
+              <div style={{width:"20px",height:"20px",borderRadius:"5px",border:anonymous?"none":"2px solid #d1d5db",background:anonymous?"#22c55e":"white",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                {anonymous&&<span style={{color:"white",fontSize:"13px",lineHeight:1}}>✓</span>}
               </div>
-              <span style={{fontSize:"13px",fontWeight:"600",color:"#166534"}}>🔒 File Anonymously (identity hidden)</span>
+              <span style={{fontSize:"13px",fontWeight:"600",color:"#166534"}}>🔒 File Anonymously — identity hidden</span>
             </div>
-            <label style={{display:"block",fontWeight:"600",fontSize:"13px",color:"#374151",marginBottom:"6px"}}>Type of Crime</label>
-            <select value={crimeType} onChange={e=>setCrimeType(e.target.value)} style={{width:"100%",padding:"11px 14px",border:"1px solid #d1d5db",borderRadius:"8px",fontSize:"14px",marginBottom:"18px",background:"white"}}>
+            <label style={{display:"block",fontWeight:"600",fontSize:"13px",color:"#374151",marginBottom:"5px"}}>Type of Crime</label>
+            <select value={crimeType} onChange={e=>setCrimeType(e.target.value)} style={{width:"100%",padding:"13px 12px",border:"1px solid #d1d5db",borderRadius:"8px",fontSize:"15px",marginBottom:"16px",background:"white",outline:"none"}}>
               {["Theft/Robbery","Assault","Vandalism","Fraud/Scam","Kidnapping","Drug Related","Cybercrime","Murder/Attempted Murder","Other"].map(o=><option key={o}>{o}</option>)}
             </select>
-            <label style={{display:"block",fontWeight:"600",fontSize:"13px",color:"#374151",marginBottom:"8px"}}>Urgency Level</label>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px",marginBottom:"18px"}}>
-              {urgencyOpts.map(opt=>(
-                <button key={opt} onClick={()=>setUrgency(opt)} style={{padding:"12px",border:urgency===opt?"none":"1px solid #d1d5db",borderRadius:"8px",background:urgency===opt?"#0f172a":"white",color:urgency===opt?"white":"#374151",fontWeight:urgency===opt?"700":"500",fontSize:"12px"}}>
-                  {opt}
-                </button>
+            <label style={{display:"block",fontWeight:"600",fontSize:"13px",color:"#374151",marginBottom:"7px"}}>Urgency Level</label>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px",marginBottom:"16px"}}>
+              {["Low (Non-emergency)","Medium","High (Emergency)","Critical (Life-threatening)"].map(opt=>(
+                <button key={opt} onClick={()=>setUrgency(opt)} style={{padding:"12px 8px",border:urgency===opt?"none":"1px solid #d1d5db",borderRadius:"8px",background:urgency===opt?"#0f172a":"white",color:urgency===opt?"white":"#374151",fontWeight:urgency===opt?"700":"500",fontSize:"12px",lineHeight:1.3}}>{opt}</button>
               ))}
             </div>
-            <label style={{display:"block",fontWeight:"600",fontSize:"13px",color:"#374151",marginBottom:"6px"}}>Detailed Description</label>
+            <label style={{display:"block",fontWeight:"600",fontSize:"13px",color:"#374151",marginBottom:"5px"}}>Detailed Description</label>
             <textarea value={description} onChange={e=>setDescription(e.target.value)} placeholder="Describe what happened, who was involved, and any specific details..."
-              style={{width:"100%",minHeight:"100px",padding:"12px 14px",border:description?"2px solid #f59e0b":"1px solid #d1d5db",borderRadius:"8px",fontSize:"13px",resize:"vertical",outline:"none",fontFamily:"inherit",marginBottom:"22px"}}/>
-            <button onClick={()=>setStep(2)} style={{width:"100%",background:"#0f172a",color:"white",border:"none",borderRadius:"8px",padding:"14px",fontWeight:"700",fontSize:"15px"}}>Continue</button>
+              style={{width:"100%",minHeight:"96px",padding:"12px 13px",border:description?"2px solid #f59e0b":"1px solid #d1d5db",borderRadius:"8px",fontSize:"15px",resize:"vertical",outline:"none",fontFamily:"inherit",marginBottom:"20px"}}/>
+            <button onClick={()=>setStep(2)} style={{width:"100%",background:"#0f172a",color:"white",border:"none",borderRadius:"8px",padding:"15px",fontWeight:"700",fontSize:"15px"}}>Continue →</button>
           </div>
         )}
         {step===2&&(
           <div>
-            <div style={{display:"flex",justifyContent:"space-between",marginBottom:"6px"}}>
-              <h2 style={{fontSize:"22px",fontWeight:"800",color:"#0f172a"}}>Location & Evidence</h2>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:"4px"}}>
+              <h2 style={{fontSize:"20px",fontWeight:"800",color:"#0f172a"}}>Location & Evidence</h2>
               <button onClick={onCancel} style={{background:"none",border:"none",color:"#94a3b8",fontSize:"14px"}}>Cancel</button>
             </div>
-            <p style={{fontSize:"13px",color:"#94a3b8",marginBottom:"22px"}}>Step 2 of 3</p>
-            <div style={{border:"1px solid #e2e8f0",borderRadius:"10px",padding:"16px",marginBottom:"18px"}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"10px"}}>
+            <p style={{fontSize:"12px",color:"#94a3b8",marginBottom:"18px"}}>Step 2 of 3</p>
+            <div style={{border:"1px solid #e2e8f0",borderRadius:"10px",padding:"14px",marginBottom:"16px"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"10px",gap:"8px"}}>
                 <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
                   <span style={{fontSize:"20px"}}>📍</span>
                   <div><div style={{fontWeight:"700",fontSize:"14px"}}>Incident Location</div><div style={{fontSize:"11px",color:"#94a3b8"}}>Auto-captured via GPS</div></div>
                 </div>
-                <button style={{background:"white",border:"1px solid #d1d5db",borderRadius:"6px",padding:"6px 12px",fontSize:"12px",fontWeight:"600"}}>Update GPS</button>
+                <button style={{background:"white",border:"1px solid #d1d5db",borderRadius:"6px",padding:"7px 11px",fontSize:"12px",fontWeight:"600",whiteSpace:"nowrap",flexShrink:0}}>Update GPS</button>
               </div>
               <div style={{background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:"6px",padding:"10px 12px",fontSize:"13px",color:"#94a3b8",fontStyle:"italic"}}>Location not yet captured</div>
             </div>
-            <label style={{display:"block",fontWeight:"600",fontSize:"13px",color:"#374151",marginBottom:"8px"}}>Media Evidence (Photos/Videos)</label>
-            <div style={{border:"2px dashed #d1d5db",borderRadius:"10px",padding:"32px",display:"flex",flexDirection:"column",alignItems:"center",cursor:"pointer",marginBottom:"22px"}}>
-              <span style={{fontSize:"28px",color:"#9ca3af"}}>+</span>
-              <div style={{fontSize:"12px",color:"#9ca3af",marginTop:"6px",fontWeight:"600",letterSpacing:"1px"}}>ADD MEDIA</div>
+            <label style={{display:"block",fontWeight:"600",fontSize:"13px",color:"#374151",marginBottom:"7px"}}>Media Evidence <span style={{color:"#94a3b8",fontWeight:"400"}}>(optional)</span></label>
+            <LiveRecorder compact={true}/>
+            <label style={{display:"block",fontWeight:"600",fontSize:"13px",color:"#374151",marginBottom:"7px"}}>Or Upload Photos/Videos</label>
+            <div style={{border:"2px dashed #d1d5db",borderRadius:"10px",padding:"34px 20px",display:"flex",flexDirection:"column",alignItems:"center",cursor:"pointer",marginBottom:"22px",background:"#fafafa"}}>
+              <span style={{fontSize:"30px",color:"#d1d5db"}}>📷</span>
+              <div style={{fontSize:"13px",color:"#9ca3af",marginTop:"8px",fontWeight:"600"}}>Tap to add photos or videos</div>
+              <div style={{fontSize:"11px",color:"#cbd5e1",marginTop:"3px"}}>JPG, PNG, MP4 supported</div>
             </div>
-            <div style={{display:"flex",gap:"12px"}}>
-              <button onClick={()=>setStep(1)} style={{background:"white",color:"#374151",border:"1px solid #d1d5db",borderRadius:"8px",padding:"14px 24px",fontWeight:"600",fontSize:"14px"}}>Back</button>
-              <button onClick={()=>setStep(3)} style={{flex:1,background:"#0f172a",color:"white",border:"none",borderRadius:"8px",padding:"14px",fontWeight:"700",fontSize:"15px"}}>Continue</button>
+            <div style={{display:"flex",gap:"10px"}}>
+              <button onClick={()=>setStep(1)} style={{background:"white",color:"#374151",border:"1px solid #d1d5db",borderRadius:"8px",padding:"15px 18px",fontWeight:"600",fontSize:"14px"}}>← Back</button>
+              <button onClick={()=>setStep(3)} style={{flex:1,background:"#0f172a",color:"white",border:"none",borderRadius:"8px",padding:"15px",fontWeight:"700",fontSize:"15px"}}>Continue →</button>
             </div>
           </div>
         )}
         {step===3&&(
           <div>
-            <div style={{display:"flex",justifyContent:"space-between",marginBottom:"6px"}}>
-              <h2 style={{fontSize:"22px",fontWeight:"800",color:"#0f172a"}}>Final Review</h2>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:"4px"}}>
+              <h2 style={{fontSize:"20px",fontWeight:"800",color:"#0f172a"}}>Final Review</h2>
               <button onClick={onCancel} style={{background:"none",border:"none",color:"#94a3b8",fontSize:"14px"}}>Cancel</button>
             </div>
-            <p style={{fontSize:"13px",color:"#94a3b8",marginBottom:"22px"}}>Step 3 of 3</p>
-            <div style={{background:"#fffbeb",border:"1px solid #fde68a",borderRadius:"10px",padding:"20px 22px",marginBottom:"18px"}}>
-              <div style={{fontWeight:"700",fontSize:"15px",marginBottom:"16px"}}>Report Summary</div>
-              {[["Crime Type",crimeType],["Urgency",urgency],["Identity",anonymous?"Anonymous":"Identified"],["Location","Manual"],["Media Files","0 attached"]].map(([k,v])=>(
-                <div key={k} style={{display:"flex",justifyContent:"space-between",marginBottom:"10px"}}>
+            <p style={{fontSize:"12px",color:"#94a3b8",marginBottom:"18px"}}>Step 3 of 3</p>
+            <div style={{background:"#fffbeb",border:"1px solid #fde68a",borderRadius:"10px",padding:"17px 18px",marginBottom:"16px"}}>
+              <div style={{fontWeight:"700",fontSize:"14px",marginBottom:"12px"}}>📋 Report Summary</div>
+              {[["Crime Type",crimeType],["Urgency",urgency],["Identity",anonymous?"🔒 Anonymous":"👤 Identified"],["Location","Manual"],["Media Files","0 attached"]].map(([k,v])=>(
+                <div key={k} style={{display:"flex",justifyContent:"space-between",marginBottom:"9px",gap:"10px"}}>
                   <span style={{fontSize:"13px",color:"#64748b"}}>{k}</span>
-                  <span style={{fontSize:"13px",fontWeight:"700",color:"#0f172a"}}>{v}</span>
+                  <span style={{fontSize:"13px",fontWeight:"700",color:"#0f172a",textAlign:"right"}}>{v}</span>
                 </div>
               ))}
             </div>
-            <p style={{fontSize:"12px",color:"#94a3b8",fontStyle:"italic",lineHeight:1.6,marginBottom:"22px"}}>
-              "I hereby certify that the information provided is accurate to the best of my knowledge. I understand that filing a false police report is a punishable offense."
-            </p>
-            <div style={{display:"flex",gap:"12px"}}>
-              <button onClick={()=>setStep(2)} style={{background:"white",color:"#374151",border:"1px solid #d1d5db",borderRadius:"8px",padding:"14px 24px",fontWeight:"600",fontSize:"14px"}}>Back</button>
-              <button onClick={handleSubmit} disabled={submitting} style={{flex:1,background:submitting?"#86efac":"#0f172a",color:"white",border:"none",borderRadius:"8px",padding:"14px",fontWeight:"700",fontSize:"15px",display:"flex",alignItems:"center",justifyContent:"center",gap:"8px"}}>
-                {submitting?<><span style={{width:"14px",height:"14px",border:"2px solid rgba(255,255,255,0.4)",borderTop:"2px solid white",borderRadius:"50%",animation:"spin 0.7s linear infinite",display:"inline-block"}}></span>Submitting...</>:"Confirm & Send Report"}
+            <p style={{fontSize:"12px",color:"#94a3b8",fontStyle:"italic",lineHeight:1.6,marginBottom:"20px"}}>"I hereby certify that the information provided is accurate. I understand that filing a false police report is a punishable offense."</p>
+            <div style={{display:"flex",gap:"10px"}}>
+              <button onClick={()=>setStep(2)} style={{background:"white",color:"#374151",border:"1px solid #d1d5db",borderRadius:"8px",padding:"15px 18px",fontWeight:"600",fontSize:"14px"}}>← Back</button>
+              <button onClick={submit} disabled={submitting} style={{flex:1,background:submitting?"#86efac":"#0f172a",color:"white",border:"none",borderRadius:"8px",padding:"15px",fontWeight:"700",fontSize:"15px",display:"flex",alignItems:"center",justifyContent:"center",gap:"8px"}}>
+                {submitting?<><span style={{width:"14px",height:"14px",border:"2px solid rgba(255,255,255,.4)",borderTop:"2px solid white",borderRadius:"50%",animation:"spin .7s linear infinite",display:"inline-block"}}></span>Submitting...</>:"✅ Confirm & Send"}
               </button>
             </div>
           </div>
@@ -352,22 +903,22 @@ function ReportForm({onSuccess,onCancel}){
   );
 }
 
-// ── SUCCESS SCREEN ─────────────────────────────────────────────────────────
+/* ── SUCCESS ── */
 function SuccessScreen({onDashboard}){
-  const [refId]=useState(genId);
+  const[refId]=useState(genId);
   return(
-    <div style={{background:"#0f172a",minHeight:"calc(100vh - 60px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-      <div style={{background:"white",borderRadius:"16px",overflow:"hidden",width:"100%",maxWidth:"420px"}}>
-        <div style={{background:"#22c55e",padding:"36px 32px",display:"flex",flexDirection:"column",alignItems:"center"}}>
-          <div style={{width:"70px",height:"70px",borderRadius:"50%",background:"rgba(255,255,255,0.25)",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:"16px",fontSize:"36px"}}>✓</div>
-          <h2 style={{color:"white",fontWeight:"800",fontSize:"22px",marginBottom:"6px"}}>Report Filed Successfully</h2>
-          <p style={{color:"rgba(255,255,255,0.85)",fontSize:"13px",fontWeight:"600"}}>Reference ID: {refId}</p>
+    <div style={{background:"#0f172a",minHeight:"calc(100vh - 60px)",display:"flex",alignItems:"center",justifyContent:"center",padding:"20px",paddingTop:"32px"}}>
+      <div style={{background:"white",borderRadius:"16px",overflow:"hidden",width:"100%",maxWidth:"420px",animation:"fadeUp .4s ease"}}>
+        <div style={{background:"#22c55e",padding:"30px 26px",display:"flex",flexDirection:"column",alignItems:"center"}}>
+          <div style={{width:"66px",height:"66px",borderRadius:"50%",background:"rgba(255,255,255,.25)",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:"12px",fontSize:"34px"}}>✓</div>
+          <h2 style={{color:"white",fontWeight:"800",fontSize:"20px",marginBottom:"5px",textAlign:"center"}}>Report Filed Successfully</h2>
+          <p style={{color:"rgba(255,255,255,.85)",fontSize:"13px",fontWeight:"600"}}>Reference ID: {refId}</p>
         </div>
-        <div style={{padding:"24px 28px"}}>
-          {[{icon:"👮",title:"Police Notified",desc:"An officer in your jurisdiction has been alerted. Do not refresh this page."},{icon:"📱",title:"Track Status",desc:"You can track investigation progress in the \"My Reports\" dashboard."}].map(item=>(
-            <div key={item.title} style={{display:"flex",gap:"14px",alignItems:"flex-start",marginBottom:"18px"}}>
-              <span style={{fontSize:"22px"}}>{item.icon}</span>
-              <div><div style={{fontWeight:"700",fontSize:"14px",color:"#0f172a",marginBottom:"3px"}}>{item.title}</div><div style={{fontSize:"12px",color:"#64748b",lineHeight:1.5}}>{item.desc}</div></div>
+        <div style={{padding:"20px 22px"}}>
+          {[{icon:"👮",title:"Police Notified",desc:"An officer in your jurisdiction has been alerted."},{icon:"📱",title:"Track Status",desc:"Track progress in the \"My Reports\" dashboard."}].map(i=>(
+            <div key={i.title} style={{display:"flex",gap:"12px",alignItems:"flex-start",marginBottom:"14px"}}>
+              <span style={{fontSize:"20px"}}>{i.icon}</span>
+              <div><div style={{fontWeight:"700",fontSize:"14px",color:"#0f172a",marginBottom:"2px"}}>{i.title}</div><div style={{fontSize:"12px",color:"#64748b",lineHeight:1.5}}>{i.desc}</div></div>
             </div>
           ))}
           <button onClick={onDashboard} style={{width:"100%",background:"#0f172a",color:"white",border:"none",borderRadius:"8px",padding:"14px",fontWeight:"700",fontSize:"15px"}}>View Dashboard</button>
@@ -377,78 +928,110 @@ function SuccessScreen({onDashboard}){
   );
 }
 
-// ── MY REPORTS ─────────────────────────────────────────────────────────────
+/* ── MY REPORTS ── */
 function MyReportsPage(){
+  const m=useIsMobile();
   return(
-    <div style={{background:"#f8fafc",minHeight:"calc(100vh - 60px)",padding:"48px"}}>
-      <h1 style={{fontSize:"28px",fontWeight:"800",color:"#0f172a",marginBottom:"8px"}}>My Reports</h1>
-      <p style={{color:"#64748b",marginBottom:"32px"}}>Track the status of your submitted crime reports.</p>
-      <div style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"12px",padding:"48px",textAlign:"center"}}>
-        <div style={{fontSize:"40px",marginBottom:"12px"}}>📋</div>
-        <p style={{fontWeight:"600",fontSize:"15px",marginBottom:"6px",color:"#64748b"}}>No reports yet</p>
+    <div style={{background:"#f8fafc",minHeight:"calc(100vh - 60px)",padding:m?"18px 16px":"44px 48px"}}>
+      <h1 style={{fontSize:m?"22px":"27px",fontWeight:"800",color:"#0f172a",marginBottom:"6px"}}>My Reports</h1>
+      <p style={{color:"#64748b",marginBottom:"26px",fontSize:"14px"}}>Track the status of your submitted crime reports.</p>
+      <div style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"12px",padding:"44px 20px",textAlign:"center"}}>
+        <div style={{fontSize:"38px",marginBottom:"10px"}}>📋</div>
+        <p style={{fontWeight:"600",fontSize:"15px",marginBottom:"5px",color:"#64748b"}}>No reports yet</p>
         <p style={{fontSize:"13px",color:"#94a3b8"}}>Your submitted reports will appear here.</p>
       </div>
     </div>
   );
 }
 
-// ── REPORT DETAIL MODAL ────────────────────────────────────────────────────
-function ReportDetailModal({report,onClose,onStatusChange,isAdmin}){
-  const [status,setStatus]=useState(report.status);
-  const [note,setNote]=useState("");
-  const [notes,setNotes]=useState([{author:"System",text:"Report received and logged.",time:"Auto"}]);
-  function handleStatus(s){ setStatus(s); if(onStatusChange) onStatusChange(report.id,s); }
-  function addNote(){ if(!note.trim()) return; setNotes([...notes,{author:isAdmin?"Admin":"Officer",text:note,time:"Just now"}]); setNote(""); }
-  const statusFlow=["Submitted","Assigned","En Route","On Scene","Investigating","Resolved"];
+/* ── LOGIN MODAL ── */
+function LoginModal({role,onSuccess,onClose}){
+  const[badge,setBadge]=useState("");const[otp,setOtp]=useState("");
+  const[step,setStep]=useState(1);const[loading,setLoading]=useState(false);const[error,setError]=useState("");
+  const C=role==="police"?{badge:"LG-4421",otp:"112112"}:{badge:"ADMIN-01",otp:"999999"};
+  async function hBadge(){if(!badge){setError("Enter your ID");return;}setLoading(true);setError("");await new Promise(r=>setTimeout(r,700));setLoading(false);if(badge.toUpperCase()!==C.badge){setError("ID not found");return;}setStep(2);}
+  async function hOtp(){if(!otp){setError("Enter OTP");return;}setLoading(true);setError("");await new Promise(r=>setTimeout(r,700));setLoading(false);if(otp!==C.otp){setError("Invalid OTP — try "+C.otp);return;}onSuccess();}
   return(
     <Modal onClose={onClose}>
-      <div style={{padding:"28px 32px"}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"20px"}}>
+      <div style={{padding:"28px 24px"}}>
+        <div style={{fontSize:"30px",marginBottom:"6px"}}>{role==="police"?"👮":"🛡️"}</div>
+        <h2 style={{fontSize:"19px",fontWeight:"800",color:"#0f172a",marginBottom:"3px"}}>{role==="police"?"Police Officer Login":"Admin Panel Login"}</h2>
+        <p style={{fontSize:"13px",color:"#94a3b8",marginBottom:"22px"}}>{step===1?`Enter your ${role==="police"?"Badge ID":"Admin ID"}`:"Enter OTP sent to your registered number"}</p>
+        {step===1?(
+          <>
+            <label style={{fontSize:"13px",fontWeight:"600",color:"#374151",display:"block",marginBottom:"5px"}}>{role==="police"?"Badge ID":"Admin ID"}</label>
+            <input value={badge} onChange={e=>setBadge(e.target.value)} placeholder={role==="police"?"e.g. LG-4421":"e.g. ADMIN-01"}
+              style={{width:"100%",padding:"13px 13px",border:"1px solid #d1d5db",borderRadius:"8px",fontSize:"15px",marginBottom:"7px",outline:"none"}}/>
+            {error&&<p style={{color:"#ef4444",fontSize:"12px",marginBottom:"7px"}}>{error}</p>}
+            <p style={{fontSize:"11px",color:"#94a3b8",marginBottom:"18px"}}>Demo: <strong>{C.badge}</strong></p>
+            <button onClick={hBadge} style={{width:"100%",background:"#0f172a",color:"white",border:"none",borderRadius:"8px",padding:"14px",fontWeight:"700",fontSize:"14px"}}>{loading?"Verifying...":"Continue"}</button>
+          </>
+        ):(
+          <>
+            <label style={{fontSize:"13px",fontWeight:"600",color:"#374151",display:"block",marginBottom:"5px"}}>OTP Code</label>
+            <input value={otp} onChange={e=>setOtp(e.target.value)} placeholder="6-digit OTP"
+              style={{width:"100%",padding:"13px",border:"1px solid #d1d5db",borderRadius:"8px",fontSize:"20px",marginBottom:"7px",outline:"none",letterSpacing:"10px",textAlign:"center"}}/>
+            {error&&<p style={{color:"#ef4444",fontSize:"12px",marginBottom:"7px"}}>{error}</p>}
+            <p style={{fontSize:"11px",color:"#94a3b8",marginBottom:"18px"}}>Demo OTP: <strong>{C.otp}</strong></p>
+            <button onClick={hOtp} style={{width:"100%",background:role==="police"?"#1d4ed8":"#7c3aed",color:"white",border:"none",borderRadius:"8px",padding:"14px",fontWeight:"700",fontSize:"14px"}}>{loading?"Authenticating...":"Login"}</button>
+          </>
+        )}
+        <button onClick={onClose} style={{width:"100%",background:"none",border:"none",color:"#94a3b8",fontSize:"13px",marginTop:"10px",padding:"8px"}}>Cancel</button>
+      </div>
+    </Modal>
+  );
+}
+
+/* ── REPORT DETAIL MODAL ── */
+function ReportDetailModal({report,onClose,onStatusChange,isAdmin}){
+  const[status,setStatus]=useState(report.status);
+  const[note,setNote]=useState("");
+  const[notes,setNotes]=useState([{author:"System",text:"Report received and logged.",time:"Auto"}]);
+  function hStatus(s){setStatus(s);if(onStatusChange)onStatusChange(report.id,s);}
+  function addNote(){if(!note.trim())return;setNotes([...notes,{author:isAdmin?"Admin":"Officer",text:note,time:"Just now"}]);setNote("");}
+  const flow=["Submitted","Assigned","En Route","On Scene","Investigating","Resolved"];
+  return(
+    <Modal onClose={onClose}>
+      <div style={{padding:"22px 22px"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"16px",gap:"8px"}}>
           <div>
-            <div style={{display:"flex",alignItems:"center",gap:"10px",marginBottom:"4px",flexWrap:"wrap"}}>
-              <span style={{fontWeight:"800",fontSize:"18px",color:"#0f172a"}}>{report.id}</span>
-              <Badge label={report.urgency} color={URGENCY_COLOR[report.urgency]} bg={URGENCY_COLOR[report.urgency]+"20"}/>
-              <Badge label={status} color={STATUS_COLOR[status]} bg={STATUS_BG[status]}/>
+            <div style={{display:"flex",alignItems:"center",gap:"7px",marginBottom:"3px",flexWrap:"wrap"}}>
+              <span style={{fontWeight:"800",fontSize:"16px",color:"#0f172a"}}>{report.id}</span>
+              <Bdg label={report.urgency} color={UC[report.urgency]} bg={UC[report.urgency]+"20"}/>
+              <Bdg label={status} color={SC[status]} bg={SB[status]}/>
             </div>
-            <div style={{fontSize:"13px",color:"#64748b"}}>{report.type} • {report.location} • {report.time}</div>
+            <div style={{fontSize:"12px",color:"#64748b"}}>{report.type} · {report.location} · {report.time}</div>
           </div>
-          <button onClick={onClose} style={{background:"none",border:"none",fontSize:"20px",color:"#94a3b8"}}>✕</button>
+          <button onClick={onClose} style={{background:"none",border:"none",fontSize:"20px",color:"#94a3b8",padding:"2px",flexShrink:0}}>✕</button>
         </div>
-        <div style={{background:"#f8fafc",borderRadius:"8px",padding:"14px 16px",marginBottom:"18px"}}>
-          <div style={{fontWeight:"600",fontSize:"12px",color:"#64748b",marginBottom:"6px"}}>DESCRIPTION</div>
+        <div style={{background:"#f8fafc",borderRadius:"8px",padding:"11px 13px",marginBottom:"14px"}}>
+          <div style={{fontWeight:"600",fontSize:"10px",color:"#64748b",marginBottom:"4px"}}>DESCRIPTION</div>
           <p style={{fontSize:"13px",color:"#374151",lineHeight:1.6}}>{report.description}</p>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px",marginBottom:"18px"}}>
-          {[["Reporter",report.reporter],["Officer",report.officer||"Unassigned"],["Badge",report.badge||"—"],["Media",report.media+" file(s)"],["Corroborated",report.corroborated+" witness(es)"],["Location",report.location]].map(([k,v])=>(
-            <div key={k} style={{background:"#f8fafc",borderRadius:"6px",padding:"10px 12px"}}>
-              <div style={{fontSize:"10px",color:"#94a3b8",fontWeight:"700",letterSpacing:"0.5px",marginBottom:"3px"}}>{k.toUpperCase()}</div>
-              <div style={{fontSize:"13px",fontWeight:"600",color:"#374151"}}>{v}</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"7px",marginBottom:"14px"}}>
+          {[["Reporter",report.reporter],["Officer",report.officer||"Unassigned"],["Badge",report.badge||"—"],["Media",report.media+" file(s)"],["Witnesses",report.corroborated+" corroborated"],["Location",report.location]].map(([k,v])=>(
+            <div key={k} style={{background:"#f8fafc",borderRadius:"6px",padding:"8px 10px"}}>
+              <div style={{fontSize:"9px",color:"#94a3b8",fontWeight:"700",letterSpacing:"0.5px",marginBottom:"2px"}}>{k.toUpperCase()}</div>
+              <div style={{fontSize:"12px",fontWeight:"600",color:"#374151",wordBreak:"break-word"}}>{v}</div>
             </div>
           ))}
         </div>
-        <div style={{marginBottom:"18px"}}>
-          <div style={{fontWeight:"600",fontSize:"12px",color:"#64748b",marginBottom:"10px"}}>UPDATE STATUS</div>
-          <div style={{display:"flex",gap:"6px",flexWrap:"wrap"}}>
-            {statusFlow.map(s=>(
-              <button key={s} onClick={()=>handleStatus(s)} style={{padding:"6px 12px",border:"none",borderRadius:"20px",fontSize:"12px",fontWeight:"600",background:status===s?STATUS_COLOR[s]:"#f1f5f9",color:status===s?"white":"#64748b"}}>
-                {s}
-              </button>
+        <div style={{marginBottom:"14px"}}>
+          <div style={{fontWeight:"600",fontSize:"10px",color:"#64748b",marginBottom:"7px"}}>UPDATE STATUS</div>
+          <div style={{display:"flex",gap:"5px",flexWrap:"wrap"}}>
+            {flow.map(s=>(
+              <button key={s} onClick={()=>hStatus(s)} style={{padding:"5px 10px",border:"none",borderRadius:"16px",fontSize:"11px",fontWeight:"600",background:status===s?SC[s]:"#f1f5f9",color:status===s?"white":"#64748b"}}>{s}</button>
             ))}
           </div>
         </div>
         <div>
-          <div style={{fontWeight:"600",fontSize:"12px",color:"#64748b",marginBottom:"10px"}}>CASE NOTES</div>
-          <div style={{background:"#f8fafc",borderRadius:"8px",padding:"12px",marginBottom:"10px",maxHeight:"120px",overflowY:"auto"}}>
-            {notes.map((n,i)=>(
-              <div key={i} style={{fontSize:"12px",color:"#374151",marginBottom:"6px"}}>
-                <span style={{fontWeight:"700",color:"#0f172a"}}>{n.author}</span>
-                <span style={{color:"#94a3b8",margin:"0 6px"}}>{n.time}</span>{n.text}
-              </div>
-            ))}
+          <div style={{fontWeight:"600",fontSize:"10px",color:"#64748b",marginBottom:"7px"}}>CASE NOTES</div>
+          <div style={{background:"#f8fafc",borderRadius:"8px",padding:"9px 11px",marginBottom:"7px",maxHeight:"90px",overflowY:"auto"}}>
+            {notes.map((n,i)=><div key={i} style={{fontSize:"12px",color:"#374151",marginBottom:"4px"}}><span style={{fontWeight:"700",color:"#0f172a"}}>{n.author}</span><span style={{color:"#94a3b8",margin:"0 5px"}}>{n.time}</span>{n.text}</div>)}
           </div>
-          <div style={{display:"flex",gap:"8px"}}>
-            <input value={note} onChange={e=>setNote(e.target.value)} placeholder="Add a case note..." style={{flex:1,padding:"8px 12px",border:"1px solid #d1d5db",borderRadius:"6px",fontSize:"13px",outline:"none"}}/>
-            <button onClick={addNote} style={{background:"#0f172a",color:"white",border:"none",borderRadius:"6px",padding:"8px 14px",fontWeight:"600",fontSize:"13px"}}>Add</button>
+          <div style={{display:"flex",gap:"7px"}}>
+            <input value={note} onChange={e=>setNote(e.target.value)} placeholder="Add a case note..." style={{flex:1,padding:"9px 11px",border:"1px solid #d1d5db",borderRadius:"6px",fontSize:"13px",outline:"none"}}/>
+            <button onClick={addNote} style={{background:"#0f172a",color:"white",border:"none",borderRadius:"6px",padding:"9px 13px",fontWeight:"600",fontSize:"13px"}}>Add</button>
           </div>
         </div>
       </div>
@@ -456,105 +1039,109 @@ function ReportDetailModal({report,onClose,onStatusChange,isAdmin}){
   );
 }
 
-// ── POLICE PANEL ───────────────────────────────────────────────────────────
+/* ── POLICE PANEL ── */
 function PolicePanel({onLogout}){
-  const [reports,setReports]=useState(MOCK_REPORTS);
-  const [activeTab,setActiveTab]=useState("cases");
-  const [selectedReport,setSelectedReport]=useState(null);
-  const [filter,setFilter]=useState("All");
-  const officer=MOCK_OFFICERS[0];
-  const myCases=reports.filter(r=>r.officer===officer.name);
-  function updateStatus(id,s){ setReports(prev=>prev.map(r=>r.id===id?{...r,status:s}:r)); }
-  const tabs=[{id:"cases",label:"My Cases",icon:"📋"},{id:"sos",label:"SOS Alerts",icon:"🆘",badge:MOCK_SOS.filter(s=>s.status==="Active").length},{id:"profile",label:"My Profile",icon:"👮"}];
-  const filtered=myCases.filter(r=>filter==="All"||r.urgency===filter);
-
+  const m=useIsMobile();
+  const[reports,setReports]=useState(MOCK_REPORTS);
+  const[tab,setTab]=useState("cases");
+  const[sel,setSel]=useState(null);
+  const[filter,setFilter]=useState("All");
+  const o=MOCK_OFFICERS[0];
+  const mine=reports.filter(r=>r.officer===o.name);
+  function upStatus(id,s){setReports(prev=>prev.map(r=>r.id===id?{...r,status:s}:r));}
+  const tabs=[{id:"cases",label:"My Cases",icon:"📋"},{id:"sos",label:"SOS Alerts",icon:"🆘",badge:MOCK_SOS.filter(s=>s.status==="Active").length},{id:"profile",label:"Profile",icon:"👮"}];
+  const filtered=mine.filter(r=>filter==="All"||r.urgency===filter);
   return(
     <div style={{display:"flex",minHeight:"calc(100vh - 60px)",background:"#f0f4f8"}}>
-      <div style={{width:"220px",background:"#1d4ed8",padding:"24px 16px",display:"flex",flexDirection:"column",gap:"4px",flexShrink:0}}>
-        <div style={{color:"white",fontWeight:"800",fontSize:"14px",marginBottom:"4px",paddingLeft:"8px"}}>OFFICER PANEL</div>
-        <div style={{color:"#93c5fd",fontSize:"11px",paddingLeft:"8px",marginBottom:"20px"}}>{officer.name}</div>
+      <div className="panel-side" style={{background:"#1d4ed8",padding:"22px 14px",display:"flex",flexDirection:"column",gap:"3px"}}>
+        <div style={{color:"white",fontWeight:"800",fontSize:"13px",marginBottom:"2px",paddingLeft:"7px"}}>OFFICER PANEL</div>
+        <div style={{color:"#93c5fd",fontSize:"11px",paddingLeft:"7px",marginBottom:"18px"}}>{o.name}</div>
         {tabs.map(t=>(
-          <button key={t.id} onClick={()=>setActiveTab(t.id)} style={{background:activeTab===t.id?"rgba(255,255,255,0.15)":"none",border:"none",color:activeTab===t.id?"white":"#93c5fd",borderRadius:"8px",padding:"10px 12px",textAlign:"left",fontSize:"13px",fontWeight:activeTab===t.id?"700":"500",display:"flex",alignItems:"center",gap:"8px"}}>
+          <button key={t.id} onClick={()=>setTab(t.id)} style={{background:tab===t.id?"rgba(255,255,255,.15)":"none",border:"none",color:tab===t.id?"white":"#93c5fd",borderRadius:"8px",padding:"10px 11px",textAlign:"left",fontSize:"13px",fontWeight:tab===t.id?"700":"500",display:"flex",alignItems:"center",gap:"7px"}}>
             {t.icon} {t.label}
             {t.badge>0&&<span style={{background:"#ef4444",color:"white",borderRadius:"10px",padding:"1px 7px",fontSize:"10px",fontWeight:"700",marginLeft:"auto"}}>{t.badge}</span>}
           </button>
         ))}
-        <div style={{marginTop:"auto"}}>
-          <button onClick={onLogout} style={{background:"rgba(255,255,255,0.1)",border:"none",color:"#93c5fd",borderRadius:"8px",padding:"10px 12px",width:"100%",textAlign:"left",fontSize:"13px"}}>🚪 Logout</button>
+        <div style={{marginTop:"auto"}}><button onClick={onLogout} style={{background:"rgba(255,255,255,.1)",border:"none",color:"#93c5fd",borderRadius:"8px",padding:"10px 11px",width:"100%",textAlign:"left",fontSize:"13px"}}>🚪 Logout</button></div>
+      </div>
+      {/* Mobile tab bar */}
+      <div style={{position:"fixed",top:"60px",left:0,right:0,zIndex:90,background:"#1d4ed8",borderBottom:"1px solid #1e40af"}}>
+        <div className="panel-tabbar">
+          {tabs.map(t=>(
+            <button key={t.id} onClick={()=>setTab(t.id)} style={{background:"none",border:"none",color:tab===t.id?"white":"#93c5fd",padding:"12px 16px",fontSize:"12px",fontWeight:tab===t.id?"700":"500",whiteSpace:"nowrap",borderBottom:tab===t.id?"3px solid #f59e0b":"3px solid transparent",display:"flex",alignItems:"center",gap:"5px"}}>
+              {t.icon} {t.label}
+              {t.badge>0&&<span style={{background:"#ef4444",color:"white",borderRadius:"10px",padding:"1px 6px",fontSize:"10px",fontWeight:"700"}}>{t.badge}</span>}
+            </button>
+          ))}
         </div>
       </div>
-
-      <div style={{flex:1,padding:"32px",overflowY:"auto"}}>
-        {activeTab==="cases"&&(
+      <div className="panel-main" style={{paddingTop:m?"58px":"32px"}}>
+        {tab==="cases"&&(
           <div>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"24px",flexWrap:"wrap",gap:"16px"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"18px",flexWrap:"wrap",gap:"10px"}}>
               <div>
-                <h1 style={{fontSize:"24px",fontWeight:"800",color:"#0f172a"}}>My Assigned Cases</h1>
-                <p style={{color:"#64748b",fontSize:"13px"}}>{myCases.length} cases assigned to you</p>
+                <h1 style={{fontSize:m?"19px":"23px",fontWeight:"800",color:"#0f172a"}}>My Assigned Cases</h1>
+                <p style={{color:"#64748b",fontSize:"12px"}}>{mine.length} cases assigned</p>
               </div>
-              <div style={{display:"flex",gap:"24px",background:"white",border:"1px solid #e2e8f0",borderRadius:"10px",padding:"14px 20px"}}>
-                {[{label:"Active",value:myCases.filter(r=>r.status!=="Resolved").length,color:"#f59e0b"},{label:"Resolved",value:myCases.filter(r=>r.status==="Resolved").length,color:"#22c55e"},{label:"Critical",value:myCases.filter(r=>r.urgency==="Critical").length,color:"#ef4444"}].map(s=>(
-                  <div key={s.label} style={{textAlign:"center"}}>
-                    <div style={{fontSize:"22px",fontWeight:"800",color:s.color}}>{s.value}</div>
-                    <div style={{fontSize:"11px",color:"#94a3b8"}}>{s.label}</div>
+              <div style={{display:"flex",gap:"18px",background:"white",border:"1px solid #e2e8f0",borderRadius:"10px",padding:"11px 16px"}}>
+                {[{l:"Active",v:mine.filter(r=>r.status!=="Resolved").length,c:"#f59e0b"},{l:"Resolved",v:mine.filter(r=>r.status==="Resolved").length,c:"#22c55e"},{l:"Critical",v:mine.filter(r=>r.urgency==="Critical").length,c:"#ef4444"}].map(s=>(
+                  <div key={s.l} style={{textAlign:"center"}}>
+                    <div style={{fontSize:"17px",fontWeight:"800",color:s.c}}>{s.v}</div>
+                    <div style={{fontSize:"10px",color:"#94a3b8"}}>{s.l}</div>
                   </div>
                 ))}
               </div>
             </div>
-            <div style={{display:"flex",gap:"8px",marginBottom:"20px",flexWrap:"wrap"}}>
+            <div style={{display:"flex",gap:"6px",marginBottom:"14px",overflowX:"auto",paddingBottom:"4px"}}>
               {["All","Critical","High","Medium","Low"].map(f=>(
-                <button key={f} onClick={()=>setFilter(f)} style={{padding:"6px 14px",border:filter===f?"none":"1px solid #e2e8f0",borderRadius:"20px",fontSize:"12px",fontWeight:"600",background:filter===f?"#1d4ed8":"white",color:filter===f?"white":"#64748b"}}>
-                  {f}
-                </button>
+                <button key={f} onClick={()=>setFilter(f)} style={{padding:"5px 12px",border:filter===f?"none":"1px solid #e2e8f0",borderRadius:"18px",fontSize:"12px",fontWeight:"600",background:filter===f?"#1d4ed8":"white",color:filter===f?"white":"#64748b",whiteSpace:"nowrap",flexShrink:0}}>{f}</button>
               ))}
             </div>
-            <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
+            <div style={{display:"flex",flexDirection:"column",gap:"9px"}}>
               {filtered.map(r=>(
-                <div key={r.id} onClick={()=>setSelectedReport(r)} style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"12px",padding:"18px 20px",cursor:"pointer",borderLeft:`4px solid ${URGENCY_COLOR[r.urgency]}`}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"8px",flexWrap:"wrap",gap:"8px"}}>
-                    <div style={{display:"flex",alignItems:"center",gap:"10px",flexWrap:"wrap"}}>
-                      <span style={{fontWeight:"800",fontSize:"14px",color:"#0f172a"}}>{r.id}</span>
-                      <Badge label={r.urgency} color={URGENCY_COLOR[r.urgency]} bg={URGENCY_COLOR[r.urgency]+"20"}/>
-                      <Badge label={r.status} color={STATUS_COLOR[r.status]} bg={STATUS_BG[r.status]}/>
+                <div key={r.id} onClick={()=>setSel(r)} style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"12px",padding:m?"13px 14px":"16px 18px",cursor:"pointer",borderLeft:`4px solid ${UC[r.urgency]}`}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"7px",gap:"7px"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:"7px",flexWrap:"wrap"}}>
+                      <span style={{fontWeight:"800",fontSize:"13px",color:"#0f172a"}}>{r.id}</span>
+                      <Bdg label={r.urgency} color={UC[r.urgency]} bg={UC[r.urgency]+"20"}/>
+                      <Bdg label={r.status} color={SC[r.status]} bg={SB[r.status]}/>
                     </div>
-                    <span style={{fontSize:"12px",color:"#94a3b8"}}>{r.time}</span>
+                    <span style={{fontSize:"11px",color:"#94a3b8",whiteSpace:"nowrap",flexShrink:0}}>{r.time}</span>
                   </div>
-                  <div style={{fontWeight:"600",fontSize:"14px",color:"#374151",marginBottom:"4px"}}>{r.type}</div>
-                  <div style={{fontSize:"12px",color:"#64748b",marginBottom:"6px"}}>{r.description.substring(0,90)}...</div>
-                  <div style={{display:"flex",gap:"16px",fontSize:"11px",color:"#94a3b8",flexWrap:"wrap"}}>
-                    <span>📍 {r.location}</span><span>📎 {r.media} media</span>
-                    {r.corroborated>0&&<span>👥 {r.corroborated} witnesses</span>}
+                  <div style={{fontWeight:"600",fontSize:"13px",color:"#374151",marginBottom:"3px"}}>{r.type}</div>
+                  <div style={{fontSize:"12px",color:"#64748b",marginBottom:"5px"}}>{r.description.substring(0,80)}...</div>
+                  <div style={{display:"flex",gap:"10px",fontSize:"11px",color:"#94a3b8",flexWrap:"wrap"}}>
+                    <span>📍 {r.location}</span><span>📎 {r.media}</span>
+                    {r.corroborated>0&&<span>👥 {r.corroborated}</span>}
                   </div>
                 </div>
               ))}
-              {filtered.length===0&&<div style={{textAlign:"center",color:"#94a3b8",padding:"40px",background:"white",borderRadius:"12px"}}>No cases found.</div>}
+              {filtered.length===0&&<div style={{textAlign:"center",color:"#94a3b8",padding:"36px",background:"white",borderRadius:"12px"}}>No cases for this filter.</div>}
             </div>
           </div>
         )}
-
-        {activeTab==="sos"&&(
+        {tab==="sos"&&(
           <div>
-            <h1 style={{fontSize:"24px",fontWeight:"800",color:"#0f172a",marginBottom:"6px"}}>SOS Alerts</h1>
-            <p style={{color:"#64748b",fontSize:"13px",marginBottom:"24px"}}>Live panic button activations requiring immediate response</p>
-            <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
+            <h1 style={{fontSize:m?"19px":"23px",fontWeight:"800",color:"#0f172a",marginBottom:"5px"}}>SOS Alerts</h1>
+            <p style={{color:"#64748b",fontSize:"12px",marginBottom:"18px"}}>Live panic button activations</p>
+            <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
               {MOCK_SOS.map(s=>(
-                <div key={s.id} style={{background:s.status==="Active"?"#fff1f2":"white",border:`1px solid ${s.status==="Active"?"#fecdd3":"#e2e8f0"}`,borderRadius:"12px",padding:"20px 22px",borderLeft:`4px solid ${s.status==="Active"?"#ef4444":"#22c55e"}`}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"10px",flexWrap:"wrap",gap:"8px"}}>
-                    <div style={{display:"flex",alignItems:"center",gap:"10px",flexWrap:"wrap"}}>
-                      <span style={{fontSize:"20px"}}>{s.status==="Active"?"🆘":"✅"}</span>
-                      <span style={{fontWeight:"800",fontSize:"15px"}}>{s.id}</span>
-                      <Badge label={s.status} color={s.status==="Active"?"#ef4444":"#22c55e"} bg={s.status==="Active"?"#fee2e2":"#f0fdf4"}/>
-                      {s.recorded&&<Badge label="🎙️ Recording Active" color="#7c3aed" bg="#f5f3ff"/>}
+                <div key={s.id} style={{background:s.status==="Active"?"#fff1f2":"white",border:`1px solid ${s.status==="Active"?"#fecdd3":"#e2e8f0"}`,borderRadius:"12px",padding:"16px",borderLeft:`4px solid ${s.status==="Active"?"#ef4444":"#22c55e"}`}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"8px",gap:"7px",flexWrap:"wrap"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:"7px",flexWrap:"wrap"}}>
+                      <span style={{fontSize:"18px"}}>{s.status==="Active"?"🆘":"✅"}</span>
+                      <span style={{fontWeight:"800",fontSize:"14px"}}>{s.id}</span>
+                      <Bdg label={s.status} color={s.status==="Active"?"#ef4444":"#22c55e"} bg={s.status==="Active"?"#fee2e2":"#f0fdf4"}/>
+                      {s.recorded&&<Bdg label="🎙️ Recording" color="#7c3aed" bg="#f5f3ff"/>}
                     </div>
-                    <span style={{fontSize:"12px",color:"#94a3b8"}}>{s.time}</span>
+                    <span style={{fontSize:"11px",color:"#94a3b8",whiteSpace:"nowrap"}}>{s.time}</span>
                   </div>
-                  <div style={{fontSize:"13px",color:"#374151",marginBottom:"4px"}}>📍 {s.location}</div>
-                  <div style={{fontSize:"13px",color:"#374151",marginBottom:s.status==="Active"?"12px":"0"}}>📞 {s.reporter}</div>
+                  <div style={{fontSize:"13px",color:"#374151",marginBottom:"3px"}}>📍 {s.location}</div>
+                  <div style={{fontSize:"13px",color:"#374151",marginBottom:s.status==="Active"?"10px":"0"}}>📞 {s.reporter}</div>
                   {s.status==="Active"&&(
-                    <div style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
-                      <button style={{background:"#ef4444",color:"white",border:"none",borderRadius:"6px",padding:"8px 16px",fontWeight:"700",fontSize:"12px"}}>Respond Now</button>
-                      <button style={{background:"white",color:"#374151",border:"1px solid #d1d5db",borderRadius:"6px",padding:"8px 16px",fontWeight:"600",fontSize:"12px"}}>View Live Location</button>
-                      <button style={{background:"white",color:"#374151",border:"1px solid #d1d5db",borderRadius:"6px",padding:"8px 16px",fontWeight:"600",fontSize:"12px"}}>Play Recording</button>
+                    <div style={{display:"flex",gap:"7px",flexWrap:"wrap"}}>
+                      <button style={{background:"#ef4444",color:"white",border:"none",borderRadius:"6px",padding:"9px 14px",fontWeight:"700",fontSize:"12px"}}>Respond Now</button>
+                      <button style={{background:"white",color:"#374151",border:"1px solid #d1d5db",borderRadius:"6px",padding:"9px 12px",fontWeight:"600",fontSize:"12px"}}>Live Location</button>
                     </div>
                   )}
                 </div>
@@ -562,203 +1149,211 @@ function PolicePanel({onLogout}){
             </div>
           </div>
         )}
-
-        {activeTab==="profile"&&(
+        {tab==="profile"&&(
           <div>
-            <h1 style={{fontSize:"24px",fontWeight:"800",color:"#0f172a",marginBottom:"24px"}}>My Profile</h1>
-            <div style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"16px",padding:"28px",marginBottom:"20px"}}>
-              <div style={{display:"flex",alignItems:"center",gap:"20px",marginBottom:"24px"}}>
-                <div style={{width:"70px",height:"70px",background:"#1d4ed8",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"28px",flexShrink:0}}>👮</div>
+            <h1 style={{fontSize:m?"19px":"23px",fontWeight:"800",color:"#0f172a",marginBottom:"18px"}}>My Profile</h1>
+            <div style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"14px",padding:"20px",marginBottom:"14px"}}>
+              <div style={{display:"flex",alignItems:"center",gap:"14px",marginBottom:"18px"}}>
+                <div style={{width:"56px",height:"56px",background:"#1d4ed8",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"24px",flexShrink:0}}>👮</div>
                 <div>
-                  <div style={{fontSize:"20px",fontWeight:"800",color:"#0f172a"}}>{officer.name}</div>
-                  <div style={{fontSize:"13px",color:"#64748b",marginBottom:"6px"}}>{officer.rank} • {officer.station}</div>
-                  <Badge label={officer.status} color="#22c55e" bg="#f0fdf4"/>
+                  <div style={{fontSize:"17px",fontWeight:"800",color:"#0f172a"}}>{o.name}</div>
+                  <div style={{fontSize:"12px",color:"#64748b",marginBottom:"5px"}}>{o.rank} · {o.station}</div>
+                  <Bdg label={o.status} color="#22c55e" bg="#f0fdf4"/>
                 </div>
               </div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"12px"}}>
-                {[["Badge ID",officer.id],["Active Cases",officer.cases],["Total Resolved",officer.resolved]].map(([k,v])=>(
-                  <div key={k} style={{background:"#f8fafc",borderRadius:"8px",padding:"14px"}}>
-                    <div style={{fontSize:"10px",color:"#94a3b8",fontWeight:"700",marginBottom:"4px"}}>{k}</div>
-                    <div style={{fontSize:"18px",fontWeight:"800",color:"#0f172a"}}>{v}</div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"9px"}}>
+                {[["Badge ID",o.id],["Active Cases",o.cases],["Total Resolved",o.resolved]].map(([k,v])=>(
+                  <div key={k} style={{background:"#f8fafc",borderRadius:"8px",padding:"11px 10px",textAlign:"center"}}>
+                    <div style={{fontSize:"9px",color:"#94a3b8",fontWeight:"700",marginBottom:"3px"}}>{k}</div>
+                    <div style={{fontSize:"15px",fontWeight:"800",color:"#0f172a"}}>{v}</div>
                   </div>
                 ))}
               </div>
             </div>
-            <div style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"12px",padding:"20px 24px"}}>
-              <div style={{fontWeight:"700",fontSize:"14px",color:"#0f172a",marginBottom:"14px"}}>Shift Activity Log</div>
+            <div style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"12px",padding:"16px 18px",marginBottom:"14px"}}>
+              <div style={{fontWeight:"700",fontSize:"13px",color:"#0f172a",marginBottom:"10px"}}>Shift Activity Log</div>
               {[{action:"Logged in",time:"08:00"},{action:"Assigned to RPT-001",time:"08:45"},{action:"En Route to Ikeja",time:"09:12"},{action:"SOS-01 received",time:"09:30"}].map((l,i)=>(
-                <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid #f1f5f9",fontSize:"13px"}}>
-                  <span style={{color:"#374151"}}>{l.action}</span>
-                  <span style={{color:"#94a3b8"}}>{l.time}</span>
+                <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid #f1f5f9",fontSize:"13px",gap:"10px"}}>
+                  <span style={{color:"#374151"}}>{l.action}</span><span style={{color:"#94a3b8",flexShrink:0}}>{l.time}</span>
                 </div>
               ))}
             </div>
+            <button onClick={onLogout} style={{width:"100%",background:"#fee2e2",color:"#dc2626",border:"none",borderRadius:"8px",padding:"13px",fontWeight:"700",fontSize:"14px"}}>🚪 Logout</button>
           </div>
         )}
       </div>
-      {selectedReport&&<ReportDetailModal report={selectedReport} onClose={()=>setSelectedReport(null)} onStatusChange={updateStatus} isAdmin={false}/>}
+      {sel&&<ReportDetailModal report={sel} onClose={()=>setSel(null)} onStatusChange={upStatus} isAdmin={false}/>}
     </div>
   );
 }
 
-// ── ADMIN PANEL ────────────────────────────────────────────────────────────
+/* ── ADMIN PANEL ── */
 function AdminPanel({onLogout}){
-  const [reports,setReports]=useState(MOCK_REPORTS);
-  const [activeTab,setActiveTab]=useState("dashboard");
-  const [selectedReport,setSelectedReport]=useState(null);
-  const [filterType,setFilterType]=useState("All");
-  const [filterStatus,setFilterStatus]=useState("All");
-  const [broadcastMsg,setBroadcastMsg]=useState("");
-  const [broadcasted,setBroadcasted]=useState(false);
-
-  function updateStatus(id,s){ setReports(prev=>prev.map(r=>r.id===id?{...r,status:s}:r)); }
-  async function handleBroadcast(){
-    if(!broadcastMsg) return;
-    await new Promise(r=>setTimeout(r,600));
-    setBroadcasted(true); setTimeout(()=>setBroadcasted(false),3000); setBroadcastMsg("");
-  }
-
-  const tabs=[{id:"dashboard",label:"Dashboard",icon:"📊"},{id:"reports",label:"All Reports",icon:"📋"},{id:"officers",label:"Officers",icon:"👮"},{id:"heatmap",label:"Crime Heatmap",icon:"🗺️"},{id:"sos",label:"SOS Log",icon:"🆘"},{id:"broadcast",label:"Broadcast",icon:"📢"},{id:"analytics",label:"Analytics",icon:"📈"},{id:"vault",label:"Evidence Vault",icon:"🔒"}];
-  const stats={total:reports.length,active:reports.filter(r=>r.status!=="Resolved").length,critical:reports.filter(r=>r.urgency==="Critical").length,resolved:reports.filter(r=>r.status==="Resolved").length};
-  const statusFilters=["All","Submitted","Assigned","En Route","On Scene","Investigating","Resolved"];
-  const filteredReports=reports.filter(r=>(filterType==="All"||r.type===filterType)&&(filterStatus==="All"||r.status===filterStatus));
-
+  const m=useIsMobile();
+  const[reports,setReports]=useState(MOCK_REPORTS);
+  const[tab,setTab]=useState("dashboard");
+  const[sel,setSel]=useState(null);
+  const[fType,setFType]=useState("All");
+  const[fStatus,setFStatus]=useState("All");
+  const[bMsg,setBMsg]=useState("");
+  const[bSent,setBSent]=useState(false);
+  function upStatus(id,s){setReports(prev=>prev.map(r=>r.id===id?{...r,status:s}:r));}
+  async function broadcast(){if(!bMsg)return;await new Promise(r=>setTimeout(r,600));setBSent(true);setTimeout(()=>setBSent(false),3000);setBMsg("");}
+  const tabs=[{id:"dashboard",label:"Dashboard",icon:"📊"},{id:"reports",label:"Reports",icon:"📋"},{id:"officers",label:"Officers",icon:"👮"},{id:"heatmap",label:"Heatmap",icon:"🗺️"},{id:"sos",label:"SOS",icon:"🆘"},{id:"broadcast",label:"Broadcast",icon:"📢"},{id:"analytics",label:"Analytics",icon:"📈"},{id:"vault",label:"Vault",icon:"🔒"}];
+  const st={total:reports.length,active:reports.filter(r=>r.status!=="Resolved").length,critical:reports.filter(r=>r.urgency==="Critical").length,resolved:reports.filter(r=>r.status==="Resolved").length};
+  const filtered=reports.filter(r=>(fType==="All"||r.type===fType)&&(fStatus==="All"||r.status===fStatus));
   return(
     <div style={{display:"flex",minHeight:"calc(100vh - 60px)",background:"#f0f4f8"}}>
-      <div style={{width:"220px",background:"#4c1d95",padding:"24px 16px",display:"flex",flexDirection:"column",gap:"4px",flexShrink:0}}>
-        <div style={{color:"white",fontWeight:"800",fontSize:"14px",marginBottom:"4px",paddingLeft:"8px"}}>ADMIN PANEL</div>
-        <div style={{color:"#c4b5fd",fontSize:"11px",paddingLeft:"8px",marginBottom:"20px"}}>Super Administrator</div>
+      <div className="panel-side" style={{background:"#4c1d95",padding:"22px 14px",display:"flex",flexDirection:"column",gap:"3px"}}>
+        <div style={{color:"white",fontWeight:"800",fontSize:"13px",marginBottom:"2px",paddingLeft:"7px"}}>ADMIN PANEL</div>
+        <div style={{color:"#c4b5fd",fontSize:"11px",paddingLeft:"7px",marginBottom:"18px"}}>Super Administrator</div>
         {tabs.map(t=>(
-          <button key={t.id} onClick={()=>setActiveTab(t.id)} style={{background:activeTab===t.id?"rgba(255,255,255,0.15)":"none",border:"none",color:activeTab===t.id?"white":"#c4b5fd",borderRadius:"8px",padding:"10px 12px",textAlign:"left",fontSize:"13px",fontWeight:activeTab===t.id?"700":"500",display:"flex",alignItems:"center",gap:"8px"}}>
+          <button key={t.id} onClick={()=>setTab(t.id)} style={{background:tab===t.id?"rgba(255,255,255,.15)":"none",border:"none",color:tab===t.id?"white":"#c4b5fd",borderRadius:"8px",padding:"10px 11px",textAlign:"left",fontSize:"13px",fontWeight:tab===t.id?"700":"500",display:"flex",alignItems:"center",gap:"7px"}}>
             {t.icon} {t.label}
           </button>
         ))}
-        <div style={{marginTop:"auto"}}>
-          <button onClick={onLogout} style={{background:"rgba(255,255,255,0.1)",border:"none",color:"#c4b5fd",borderRadius:"8px",padding:"10px 12px",width:"100%",textAlign:"left",fontSize:"13px"}}>🚪 Logout</button>
+        <div style={{marginTop:"auto"}}><button onClick={onLogout} style={{background:"rgba(255,255,255,.1)",border:"none",color:"#c4b5fd",borderRadius:"8px",padding:"10px 11px",width:"100%",textAlign:"left",fontSize:"13px"}}>🚪 Logout</button></div>
+      </div>
+      {/* Mobile tab bar */}
+      <div style={{position:"fixed",top:"60px",left:0,right:0,zIndex:90,background:"#4c1d95",borderBottom:"1px solid #6d28d9"}}>
+        <div className="panel-tabbar">
+          {tabs.map(t=>(
+            <button key={t.id} onClick={()=>setTab(t.id)} style={{background:"none",border:"none",color:tab===t.id?"white":"#c4b5fd",padding:"10px 13px",fontSize:"11px",fontWeight:tab===t.id?"700":"500",whiteSpace:"nowrap",borderBottom:tab===t.id?"3px solid #f59e0b":"3px solid transparent",display:"flex",flexDirection:"column",alignItems:"center",gap:"1px",flexShrink:0}}>
+              <span style={{fontSize:"15px"}}>{t.icon}</span><span>{t.label}</span>
+            </button>
+          ))}
         </div>
       </div>
-
-      <div style={{flex:1,padding:"32px",overflowY:"auto"}}>
-
-        {activeTab==="dashboard"&&(
+      <div className="panel-main" style={{paddingTop:m?"62px":"32px"}}>
+        {tab==="dashboard"&&(
           <div>
-            <h1 style={{fontSize:"24px",fontWeight:"800",color:"#0f172a",marginBottom:"4px"}}>Command Dashboard</h1>
-            <p style={{color:"#64748b",fontSize:"13px",marginBottom:"28px"}}>Real-time overview — Lagos State</p>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"16px",marginBottom:"28px"}}>
-              <StatCard icon="📋" label="Total Reports" value={stats.total} sub="All time" accent="#3b82f6"/>
-              <StatCard icon="🔴" label="Active Incidents" value={stats.active} sub="Needs attention" accent="#ef4444"/>
-              <StatCard icon="🚨" label="Critical Cases" value={stats.critical} sub="Immediate response" accent="#f97316"/>
-              <StatCard icon="✅" label="Resolved Today" value={stats.resolved} sub="Closed cases" accent="#22c55e"/>
-              <StatCard icon="⏱️" label="Avg Response" value="8 min" sub="Last 24 hours" accent="#8b5cf6"/>
-              <StatCard icon="👮" label="Officers Active" value={MOCK_OFFICERS.filter(o=>o.status!=="Off Duty").length} sub={`of ${MOCK_OFFICERS.length} total`} accent="#f59e0b"/>
+            <h1 style={{fontSize:m?"19px":"23px",fontWeight:"800",color:"#0f172a",marginBottom:"3px"}}>Command Dashboard</h1>
+            <p style={{color:"#64748b",fontSize:"12px",marginBottom:"20px"}}>Real-time overview — Lagos State</p>
+            <div className="grid-stats" style={{marginBottom:"18px"}}>
+              <StatCard icon="📋" label="Total Reports" value={st.total} accent="#3b82f6"/>
+              <StatCard icon="🔴" label="Active" value={st.active} accent="#ef4444"/>
+              <StatCard icon="🚨" label="Critical" value={st.critical} accent="#f97316"/>
+              <StatCard icon="✅" label="Resolved" value={st.resolved} accent="#22c55e"/>
+              <StatCard icon="⏱️" label="Avg Response" value="8 min" accent="#8b5cf6"/>
+              <StatCard icon="👮" label="Officers On" value={MOCK_OFFICERS.filter(o=>o.status!=="Off Duty").length} accent="#f59e0b"/>
             </div>
-            <div style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"12px",padding:"20px 24px",marginBottom:"20px"}}>
-              <div style={{fontWeight:"700",fontSize:"15px",color:"#0f172a",marginBottom:"16px"}}>🚨 Critical & High Priority Reports</div>
+            <div style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"12px",padding:"16px 18px",marginBottom:"14px"}}>
+              <div style={{fontWeight:"700",fontSize:"13px",color:"#0f172a",marginBottom:"12px"}}>🚨 Critical & High Priority</div>
               {reports.filter(r=>r.urgency==="Critical"||r.urgency==="High").map(r=>(
-                <div key={r.id} onClick={()=>setSelectedReport(r)} style={{display:"flex",alignItems:"center",gap:"14px",padding:"12px 0",borderBottom:"1px solid #f1f5f9",cursor:"pointer",flexWrap:"wrap"}}>
-                  <div style={{width:"8px",height:"8px",borderRadius:"50%",background:URGENCY_COLOR[r.urgency],flexShrink:0}}></div>
-                  <div style={{flex:1,minWidth:"120px"}}><span style={{fontWeight:"700",fontSize:"13px"}}>{r.id}</span><span style={{color:"#64748b",fontSize:"13px",marginLeft:"8px"}}>{r.type}</span></div>
-                  <Badge label={r.urgency} color={URGENCY_COLOR[r.urgency]} bg={URGENCY_COLOR[r.urgency]+"20"}/>
-                  <Badge label={r.status} color={STATUS_COLOR[r.status]} bg={STATUS_BG[r.status]}/>
-                  <span style={{fontSize:"12px",color:"#94a3b8"}}>{r.time}</span>
+                <div key={r.id} onClick={()=>setSel(r)} style={{display:"flex",alignItems:"center",gap:"8px",padding:"9px 0",borderBottom:"1px solid #f1f5f9",cursor:"pointer",flexWrap:"wrap"}}>
+                  <div style={{width:"7px",height:"7px",borderRadius:"50%",background:UC[r.urgency],flexShrink:0}}></div>
+                  <div style={{flex:1,minWidth:"80px"}}><span style={{fontWeight:"700",fontSize:"12px"}}>{r.id}</span><span style={{color:"#64748b",fontSize:"12px",marginLeft:"6px"}}>{r.type}</span></div>
+                  <Bdg label={r.urgency} color={UC[r.urgency]} bg={UC[r.urgency]+"20"}/>
+                  <Bdg label={r.status} color={SC[r.status]} bg={SB[r.status]}/>
+                  <span style={{fontSize:"11px",color:"#94a3b8",whiteSpace:"nowrap"}}>{r.time}</span>
                 </div>
               ))}
             </div>
             {MOCK_SOS.filter(s=>s.status==="Active").length>0&&(
-              <div style={{background:"#fff1f2",border:"2px solid #fecdd3",borderRadius:"12px",padding:"16px 20px",display:"flex",alignItems:"center",gap:"16px",flexWrap:"wrap"}}>
-                <span style={{fontSize:"24px"}}>🆘</span>
+              <div style={{background:"#fff1f2",border:"2px solid #fecdd3",borderRadius:"12px",padding:"13px 15px",display:"flex",alignItems:"center",gap:"10px",flexWrap:"wrap"}}>
+                <span style={{fontSize:"20px"}}>🆘</span>
                 <div style={{flex:1}}>
-                  <div style={{fontWeight:"700",fontSize:"14px",color:"#991b1b"}}>{MOCK_SOS.filter(s=>s.status==="Active").length} Active SOS Alert(s)</div>
+                  <div style={{fontWeight:"700",fontSize:"13px",color:"#991b1b"}}>{MOCK_SOS.filter(s=>s.status==="Active").length} Active SOS Alert(s)</div>
                   <div style={{fontSize:"12px",color:"#ef4444"}}>{MOCK_SOS.find(s=>s.status==="Active")?.location}</div>
                 </div>
-                <button onClick={()=>setActiveTab("sos")} style={{background:"#ef4444",color:"white",border:"none",borderRadius:"6px",padding:"8px 16px",fontWeight:"700",fontSize:"12px"}}>View SOS →</button>
+                <button onClick={()=>setTab("sos")} style={{background:"#ef4444",color:"white",border:"none",borderRadius:"6px",padding:"7px 12px",fontWeight:"700",fontSize:"12px"}}>View →</button>
               </div>
             )}
           </div>
         )}
-
-        {activeTab==="reports"&&(
+        {tab==="reports"&&(
           <div>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"24px",flexWrap:"wrap",gap:"12px"}}>
-              <div>
-                <h1 style={{fontSize:"24px",fontWeight:"800",color:"#0f172a"}}>All Reports</h1>
-                <p style={{color:"#64748b",fontSize:"13px"}}>{filteredReports.length} reports found</p>
-              </div>
-              <button style={{background:"#0f172a",color:"white",border:"none",borderRadius:"8px",padding:"9px 18px",fontWeight:"600",fontSize:"13px"}}>⬇ Export CSV</button>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"16px",flexWrap:"wrap",gap:"8px"}}>
+              <div><h1 style={{fontSize:m?"19px":"23px",fontWeight:"800",color:"#0f172a"}}>All Reports</h1><p style={{color:"#64748b",fontSize:"12px"}}>{filtered.length} found</p></div>
+              <button style={{background:"#0f172a",color:"white",border:"none",borderRadius:"8px",padding:"8px 14px",fontWeight:"600",fontSize:"12px"}}>⬇ Export CSV</button>
             </div>
-            <div style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"10px",padding:"16px 20px",marginBottom:"16px"}}>
-              <div style={{display:"flex",gap:"20px",flexWrap:"wrap"}}>
-                <div>
-                  <div style={{fontSize:"11px",color:"#94a3b8",fontWeight:"700",marginBottom:"6px"}}>CRIME TYPE</div>
-                  <div style={{display:"flex",gap:"6px",flexWrap:"wrap"}}>
-                    {["All","Theft/Robbery","Assault","Kidnapping","Drug Related"].map(f=>(
-                      <button key={f} onClick={()=>setFilterType(f)} style={{padding:"4px 10px",border:filterType===f?"none":"1px solid #e2e8f0",borderRadius:"16px",fontSize:"11px",fontWeight:"600",background:filterType===f?"#4c1d95":"white",color:filterType===f?"white":"#64748b"}}>{f}</button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <div style={{fontSize:"11px",color:"#94a3b8",fontWeight:"700",marginBottom:"6px"}}>STATUS</div>
-                  <div style={{display:"flex",gap:"6px",flexWrap:"wrap"}}>
-                    {statusFilters.map(f=>(
-                      <button key={f} onClick={()=>setFilterStatus(f)} style={{padding:"4px 10px",border:filterStatus===f?"none":"1px solid #e2e8f0",borderRadius:"16px",fontSize:"11px",fontWeight:"600",background:filterStatus===f?"#0f172a":"white",color:filterStatus===f?"white":"#64748b"}}>{f}</button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"12px",overflow:"auto"}}>
-              <table style={{width:"100%",borderCollapse:"collapse",minWidth:"700px"}}>
-                <thead>
-                  <tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}>
-                    {["Report ID","Type","Urgency","Status","Location","Reporter","Officer","Time",""].map(h=>(
-                      <th key={h} style={{padding:"12px 14px",textAlign:"left",fontSize:"11px",fontWeight:"700",color:"#94a3b8",letterSpacing:"0.5px",whiteSpace:"nowrap"}}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredReports.map((r,i)=>(
-                    <tr key={r.id} style={{borderBottom:"1px solid #f1f5f9",background:i%2===0?"white":"#fafafa"}}>
-                      <td style={{padding:"12px 14px",fontWeight:"700",fontSize:"13px",color:"#0f172a",whiteSpace:"nowrap"}}>{r.id}</td>
-                      <td style={{padding:"12px 14px",fontSize:"13px",color:"#374151",whiteSpace:"nowrap"}}>{r.type}</td>
-                      <td style={{padding:"12px 14px",whiteSpace:"nowrap"}}><Badge label={r.urgency} color={URGENCY_COLOR[r.urgency]} bg={URGENCY_COLOR[r.urgency]+"20"}/></td>
-                      <td style={{padding:"12px 14px",whiteSpace:"nowrap"}}><Badge label={r.status} color={STATUS_COLOR[r.status]} bg={STATUS_BG[r.status]}/></td>
-                      <td style={{padding:"12px 14px",fontSize:"12px",color:"#64748b",whiteSpace:"nowrap"}}>{r.location}</td>
-                      <td style={{padding:"12px 14px",fontSize:"12px",color:"#64748b",whiteSpace:"nowrap"}}>{r.reporter==="Anonymous"?"🔒 Anon":r.reporter}</td>
-                      <td style={{padding:"12px 14px",fontSize:"12px",color:"#64748b",whiteSpace:"nowrap"}}>{r.officer||"—"}</td>
-                      <td style={{padding:"12px 14px",fontSize:"12px",color:"#94a3b8",whiteSpace:"nowrap"}}>{r.time}</td>
-                      <td style={{padding:"12px 14px"}}><button onClick={()=>setSelectedReport(r)} style={{background:"#f1f5f9",color:"#374151",border:"none",borderRadius:"6px",padding:"5px 12px",fontSize:"12px",fontWeight:"600"}}>View</button></td>
-                    </tr>
+            <div style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"10px",padding:"12px 14px",marginBottom:"12px"}}>
+              <div style={{marginBottom:"8px"}}>
+                <div style={{fontSize:"10px",color:"#94a3b8",fontWeight:"700",marginBottom:"5px"}}>CRIME TYPE</div>
+                <div style={{display:"flex",gap:"5px",flexWrap:"wrap"}}>
+                  {["All","Theft/Robbery","Assault","Kidnapping","Drug Related"].map(f=>(
+                    <button key={f} onClick={()=>setFType(f)} style={{padding:"4px 9px",border:fType===f?"none":"1px solid #e2e8f0",borderRadius:"14px",fontSize:"11px",fontWeight:"600",background:fType===f?"#4c1d95":"white",color:fType===f?"white":"#64748b"}}>{f}</button>
                   ))}
-                </tbody>
-              </table>
+                </div>
+              </div>
+              <div>
+                <div style={{fontSize:"10px",color:"#94a3b8",fontWeight:"700",marginBottom:"5px"}}>STATUS</div>
+                <div style={{display:"flex",gap:"5px",flexWrap:"wrap"}}>
+                  {["All","Submitted","Assigned","En Route","On Scene","Investigating","Resolved"].map(f=>(
+                    <button key={f} onClick={()=>setFStatus(f)} style={{padding:"4px 9px",border:fStatus===f?"none":"1px solid #e2e8f0",borderRadius:"14px",fontSize:"11px",fontWeight:"600",background:fStatus===f?"#0f172a":"white",color:fStatus===f?"white":"#64748b"}}>{f}</button>
+                  ))}
+                </div>
+              </div>
             </div>
+            {/* Mobile cards */}
+            {m?(
+              <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
+                {filtered.map(r=>(
+                  <div key={r.id} onClick={()=>setSel(r)} style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"12px",padding:"13px 14px",cursor:"pointer",borderLeft:`4px solid ${UC[r.urgency]}`}}>
+                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:"6px",gap:"7px"}}>
+                      <span style={{fontWeight:"800",fontSize:"13px",color:"#0f172a"}}>{r.id}</span>
+                      <span style={{fontSize:"11px",color:"#94a3b8"}}>{r.time}</span>
+                    </div>
+                    <div style={{display:"flex",gap:"5px",flexWrap:"wrap",marginBottom:"6px"}}>
+                      <Bdg label={r.type} color="#374151" bg="#f1f5f9"/>
+                      <Bdg label={r.urgency} color={UC[r.urgency]} bg={UC[r.urgency]+"20"}/>
+                      <Bdg label={r.status} color={SC[r.status]} bg={SB[r.status]}/>
+                    </div>
+                    <div style={{fontSize:"11px",color:"#94a3b8"}}>📍 {r.location}</div>
+                  </div>
+                ))}
+              </div>
+            ):(
+              <div className="tbl-wrap">
+                <table style={{width:"100%",borderCollapse:"collapse",minWidth:"700px"}}>
+                  <thead>
+                    <tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}>
+                      {["ID","Type","Urgency","Status","Location","Reporter","Officer","Time",""].map(h=>(
+                        <th key={h} style={{padding:"10px 12px",textAlign:"left",fontSize:"10px",fontWeight:"700",color:"#94a3b8",letterSpacing:"0.5px",whiteSpace:"nowrap"}}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map((r,i)=>(
+                      <tr key={r.id} style={{borderBottom:"1px solid #f1f5f9",background:i%2===0?"white":"#fafafa"}}>
+                        <td style={{padding:"10px 12px",fontWeight:"700",fontSize:"12px",color:"#0f172a",whiteSpace:"nowrap"}}>{r.id}</td>
+                        <td style={{padding:"10px 12px",fontSize:"12px",color:"#374151",whiteSpace:"nowrap"}}>{r.type}</td>
+                        <td style={{padding:"10px 12px"}}><Bdg label={r.urgency} color={UC[r.urgency]} bg={UC[r.urgency]+"20"}/></td>
+                        <td style={{padding:"10px 12px"}}><Bdg label={r.status} color={SC[r.status]} bg={SB[r.status]}/></td>
+                        <td style={{padding:"10px 12px",fontSize:"11px",color:"#64748b",whiteSpace:"nowrap"}}>{r.location}</td>
+                        <td style={{padding:"10px 12px",fontSize:"11px",color:"#64748b",whiteSpace:"nowrap"}}>{r.reporter==="Anonymous"?"🔒 Anon":r.reporter}</td>
+                        <td style={{padding:"10px 12px",fontSize:"11px",color:"#64748b",whiteSpace:"nowrap"}}>{r.officer||"—"}</td>
+                        <td style={{padding:"10px 12px",fontSize:"11px",color:"#94a3b8",whiteSpace:"nowrap"}}>{r.time}</td>
+                        <td style={{padding:"10px 12px"}}><button onClick={()=>setSel(r)} style={{background:"#f1f5f9",color:"#374151",border:"none",borderRadius:"6px",padding:"5px 10px",fontSize:"11px",fontWeight:"600"}}>View</button></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
-
-        {activeTab==="officers"&&(
+        {tab==="officers"&&(
           <div>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"24px",flexWrap:"wrap",gap:"12px"}}>
-              <div>
-                <h1 style={{fontSize:"24px",fontWeight:"800",color:"#0f172a"}}>Officer Management</h1>
-                <p style={{color:"#64748b",fontSize:"13px"}}>{MOCK_OFFICERS.length} officers registered</p>
-              </div>
-              <button style={{background:"#4c1d95",color:"white",border:"none",borderRadius:"8px",padding:"9px 18px",fontWeight:"600",fontSize:"13px"}}>+ Add Officer</button>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"18px",flexWrap:"wrap",gap:"8px"}}>
+              <div><h1 style={{fontSize:m?"19px":"23px",fontWeight:"800",color:"#0f172a"}}>Officer Management</h1><p style={{color:"#64748b",fontSize:"12px"}}>{MOCK_OFFICERS.length} registered</p></div>
+              <button style={{background:"#4c1d95",color:"white",border:"none",borderRadius:"8px",padding:"8px 14px",fontWeight:"600",fontSize:"12px"}}>+ Add Officer</button>
             </div>
-            <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
+            <div style={{display:"flex",flexDirection:"column",gap:"9px"}}>
               {MOCK_OFFICERS.map(o=>(
-                <div key={o.id} style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"12px",padding:"18px 22px",display:"flex",alignItems:"center",gap:"16px",flexWrap:"wrap"}}>
-                  <div style={{width:"46px",height:"46px",background:o.status==="Off Duty"?"#f1f5f9":"#1d4ed8",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"20px",flexShrink:0}}>👮</div>
-                  <div style={{flex:1,minWidth:"160px"}}>
-                    <div style={{fontWeight:"700",fontSize:"15px",color:"#0f172a"}}>{o.name}</div>
-                    <div style={{fontSize:"12px",color:"#64748b"}}>{o.rank} • {o.station} • {o.id}</div>
+                <div key={o.id} style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"12px",padding:m?"14px":"16px 20px",display:"flex",alignItems:m?"flex-start":"center",gap:"13px",flexDirection:m?"column":"row"}}>
+                  <div style={{width:"42px",height:"42px",background:o.status==="Off Duty"?"#f1f5f9":"#1d4ed8",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"18px",flexShrink:0}}>👮</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontWeight:"700",fontSize:"14px",color:"#0f172a"}}>{o.name}</div>
+                    <div style={{fontSize:"12px",color:"#64748b"}}>{o.rank} · {o.station} · {o.id}</div>
                   </div>
-                  <div style={{display:"flex",gap:"20px",alignItems:"center",flexWrap:"wrap"}}>
-                    <div style={{textAlign:"center"}}><div style={{fontSize:"16px",fontWeight:"800",color:"#0f172a"}}>{o.cases}</div><div style={{fontSize:"10px",color:"#94a3b8"}}>Active</div></div>
-                    <div style={{textAlign:"center"}}><div style={{fontSize:"16px",fontWeight:"800",color:"#22c55e"}}>{o.resolved}</div><div style={{fontSize:"10px",color:"#94a3b8"}}>Resolved</div></div>
-                    <Badge label={o.status} color={o.status==="On Duty"?"#22c55e":o.status==="On Scene"?"#f97316":"#94a3b8"} bg={o.status==="On Duty"?"#f0fdf4":o.status==="On Scene"?"#fff7ed":"#f8fafc"}/>
-                    <div style={{display:"flex",gap:"6px"}}>
-                      <button style={{background:"#f1f5f9",border:"none",borderRadius:"6px",padding:"6px 12px",fontSize:"12px",fontWeight:"600",color:"#374151"}}>Assign Case</button>
-                      <button style={{background:"#fee2e2",border:"none",borderRadius:"6px",padding:"6px 12px",fontSize:"12px",fontWeight:"600",color:"#dc2626"}}>Suspend</button>
+                  <div style={{display:"flex",gap:"14px",alignItems:"center",flexWrap:"wrap",width:m?"100%":"auto"}}>
+                    <div style={{textAlign:"center"}}><div style={{fontSize:"14px",fontWeight:"800",color:"#0f172a"}}>{o.cases}</div><div style={{fontSize:"10px",color:"#94a3b8"}}>Active</div></div>
+                    <div style={{textAlign:"center"}}><div style={{fontSize:"14px",fontWeight:"800",color:"#22c55e"}}>{o.resolved}</div><div style={{fontSize:"10px",color:"#94a3b8"}}>Resolved</div></div>
+                    <Bdg label={o.status} color={o.status==="On Duty"?"#22c55e":o.status==="On Scene"?"#f97316":"#94a3b8"} bg={o.status==="On Duty"?"#f0fdf4":o.status==="On Scene"?"#fff7ed":"#f8fafc"}/>
+                    <div style={{display:"flex",gap:"5px",marginLeft:m?"0":"auto"}}>
+                      <button style={{background:"#f1f5f9",border:"none",borderRadius:"6px",padding:"6px 10px",fontSize:"11px",fontWeight:"600",color:"#374151"}}>Assign</button>
+                      <button style={{background:"#fee2e2",border:"none",borderRadius:"6px",padding:"6px 10px",fontSize:"11px",fontWeight:"600",color:"#dc2626"}}>Suspend</button>
                     </div>
                   </div>
                 </div>
@@ -766,67 +1361,62 @@ function AdminPanel({onLogout}){
             </div>
           </div>
         )}
-
-        {activeTab==="heatmap"&&(
+        {tab==="heatmap"&&(
           <div>
-            <h1 style={{fontSize:"24px",fontWeight:"800",color:"#0f172a",marginBottom:"6px"}}>Crime Heatmap</h1>
-            <p style={{color:"#64748b",fontSize:"13px",marginBottom:"24px"}}>Anonymized incident clusters — Lagos State</p>
-            <div style={{background:"#0f172a",borderRadius:"16px",padding:"32px",minHeight:"420px",position:"relative",overflow:"hidden"}}>
-              <div style={{textAlign:"center",color:"#475569",marginBottom:"16px",fontSize:"12px",letterSpacing:"1px"}}>LAGOS STATE — INCIDENT DENSITY MAP</div>
+            <h1 style={{fontSize:m?"19px":"23px",fontWeight:"800",color:"#0f172a",marginBottom:"5px"}}>Crime Heatmap</h1>
+            <p style={{color:"#64748b",fontSize:"12px",marginBottom:"16px"}}>Anonymized incident clusters — Lagos State</p>
+            <div style={{background:"#0f172a",borderRadius:"12px",padding:m?"16px":"28px",minHeight:m?"260px":"360px",position:"relative",overflow:"hidden"}}>
+              <div style={{textAlign:"center",color:"#475569",marginBottom:"10px",fontSize:"10px",letterSpacing:"1px"}}>LAGOS STATE — INCIDENT DENSITY MAP</div>
               {[{label:"Ikeja",top:"30%",left:"42%",intensity:"#ef4444",count:12},{label:"VI",top:"65%",left:"70%",intensity:"#f97316",count:8},{label:"Surulere",top:"50%",left:"35%",intensity:"#f59e0b",count:5},{label:"Lekki",top:"60%",left:"80%",intensity:"#f97316",count:7},{label:"Agege",top:"22%",left:"25%",intensity:"#f59e0b",count:4},{label:"Yaba",top:"45%",left:"48%",intensity:"#22c55e",count:2},{label:"Oshodi",top:"38%",left:"30%",intensity:"#ef4444",count:9}].map(z=>(
                 <div key={z.label} style={{position:"absolute",top:z.top,left:z.left,transform:"translate(-50%,-50%)"}}>
-                  <div style={{width:"60px",height:"60px",borderRadius:"50%",background:z.intensity+"40",border:`2px solid ${z.intensity}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}>
-                    <div style={{fontSize:"14px",fontWeight:"800",color:z.intensity}}>{z.count}</div>
+                  <div style={{width:m?"38px":"54px",height:m?"38px":"54px",borderRadius:"50%",background:z.intensity+"40",border:`2px solid ${z.intensity}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}>
+                    <div style={{fontSize:m?"11px":"13px",fontWeight:"800",color:z.intensity}}>{z.count}</div>
                   </div>
-                  <div style={{textAlign:"center",fontSize:"10px",color:"#94a3b8",marginTop:"4px"}}>{z.label}</div>
+                  <div style={{textAlign:"center",fontSize:"9px",color:"#94a3b8",marginTop:"2px"}}>{z.label}</div>
                 </div>
               ))}
-              <div style={{position:"absolute",bottom:"20px",right:"20px",background:"#1e293b",borderRadius:"8px",padding:"12px 16px"}}>
-                <div style={{fontSize:"10px",color:"#94a3b8",fontWeight:"700",marginBottom:"8px"}}>INTENSITY</div>
-                {[["#ef4444","High (9-15)"],["#f97316","Medium (5-8)"],["#f59e0b","Low (3-4)"],["#22c55e","Minimal (1-2)"]].map(([c,l])=>(
-                  <div key={l} style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"4px"}}>
-                    <div style={{width:"10px",height:"10px",borderRadius:"50%",background:c,flexShrink:0}}></div>
-                    <span style={{fontSize:"11px",color:"#94a3b8"}}>{l}</span>
+              <div style={{position:"absolute",bottom:"10px",right:"10px",background:"#1e293b",borderRadius:"7px",padding:"8px 10px"}}>
+                {[["#ef4444","High"],["#f97316","Med"],["#f59e0b","Low"],["#22c55e","Min"]].map(([c,l])=>(
+                  <div key={l} style={{display:"flex",alignItems:"center",gap:"5px",marginBottom:"2px"}}>
+                    <div style={{width:"7px",height:"7px",borderRadius:"50%",background:c,flexShrink:0}}></div>
+                    <span style={{fontSize:"9px",color:"#94a3b8"}}>{l}</span>
                   </div>
                 ))}
               </div>
             </div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"12px",marginTop:"20px"}}>
+            <div className="grid-zone" style={{marginTop:"14px"}}>
               {[{zone:"Ikeja",reports:12,trend:"↑ +3",color:"#ef4444"},{zone:"Oshodi",reports:9,trend:"↑ +1",color:"#ef4444"},{zone:"Victoria Island",reports:8,trend:"→ 0",color:"#f97316"},{zone:"Lekki",reports:7,trend:"↓ -2",color:"#f97316"}].map(z=>(
-                <div key={z.zone} style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"10px",padding:"14px 16px",borderLeft:`4px solid ${z.color}`}}>
-                  <div style={{fontWeight:"700",fontSize:"13px",color:"#0f172a"}}>{z.zone}</div>
-                  <div style={{fontSize:"22px",fontWeight:"800",color:z.color}}>{z.reports}</div>
-                  <div style={{fontSize:"12px",color:"#94a3b8"}}>{z.trend} this week</div>
+                <div key={z.zone} style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"10px",padding:"11px 13px",borderLeft:`4px solid ${z.color}`}}>
+                  <div style={{fontWeight:"700",fontSize:"12px",color:"#0f172a"}}>{z.zone}</div>
+                  <div style={{fontSize:"18px",fontWeight:"800",color:z.color}}>{z.reports}</div>
+                  <div style={{fontSize:"11px",color:"#94a3b8"}}>{z.trend}</div>
                 </div>
               ))}
             </div>
           </div>
         )}
-
-        {activeTab==="sos"&&(
+        {tab==="sos"&&(
           <div>
-            <h1 style={{fontSize:"24px",fontWeight:"800",color:"#0f172a",marginBottom:"6px"}}>SOS Incident Log</h1>
-            <p style={{color:"#64748b",fontSize:"13px",marginBottom:"24px"}}>All panic button activations with timestamps</p>
-            <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
+            <h1 style={{fontSize:m?"19px":"23px",fontWeight:"800",color:"#0f172a",marginBottom:"5px"}}>SOS Incident Log</h1>
+            <p style={{color:"#64748b",fontSize:"12px",marginBottom:"16px"}}>All panic button activations</p>
+            <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
               {MOCK_SOS.map(s=>(
-                <div key={s.id} style={{background:s.status==="Active"?"#fff1f2":"white",border:`1px solid ${s.status==="Active"?"#fecdd3":"#e2e8f0"}`,borderRadius:"12px",padding:"20px 24px",borderLeft:`4px solid ${s.status==="Active"?"#ef4444":"#22c55e"}`}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"10px",flexWrap:"wrap",gap:"8px"}}>
-                    <div style={{display:"flex",alignItems:"center",gap:"10px",flexWrap:"wrap"}}>
-                      <span style={{fontWeight:"800",fontSize:"15px"}}>{s.id}</span>
-                      <Badge label={s.status} color={s.status==="Active"?"#ef4444":"#22c55e"} bg={s.status==="Active"?"#fee2e2":"#f0fdf4"}/>
-                      {s.recorded&&<Badge label="🎙️ Recorded" color="#7c3aed" bg="#f5f3ff"/>}
+                <div key={s.id} style={{background:s.status==="Active"?"#fff1f2":"white",border:`1px solid ${s.status==="Active"?"#fecdd3":"#e2e8f0"}`,borderRadius:"12px",padding:"16px",borderLeft:`4px solid ${s.status==="Active"?"#ef4444":"#22c55e"}`}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"8px",flexWrap:"wrap",gap:"6px"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:"7px",flexWrap:"wrap"}}>
+                      <span style={{fontWeight:"800",fontSize:"13px"}}>{s.id}</span>
+                      <Bdg label={s.status} color={s.status==="Active"?"#ef4444":"#22c55e"} bg={s.status==="Active"?"#fee2e2":"#f0fdf4"}/>
+                      {s.recorded&&<Bdg label="🎙️ Recorded" color="#7c3aed" bg="#f5f3ff"/>}
                     </div>
-                    <span style={{fontSize:"12px",color:"#94a3b8"}}>{s.time}</span>
+                    <span style={{fontSize:"11px",color:"#94a3b8"}}>{s.time}</span>
                   </div>
-                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px",fontSize:"13px",marginBottom:s.status==="Active"?"12px":"0"}}>
-                    <span style={{color:"#374151"}}>📍 {s.location}</span>
-                    <span style={{color:"#374151"}}>📞 {s.reporter}</span>
-                  </div>
+                  <div style={{fontSize:"13px",color:"#374151",marginBottom:"3px"}}>📍 {s.location}</div>
+                  <div style={{fontSize:"13px",color:"#374151",marginBottom:s.status==="Active"?"10px":"0"}}>📞 {s.reporter}</div>
                   {s.status==="Active"&&(
-                    <div style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
-                      <button style={{background:"#ef4444",color:"white",border:"none",borderRadius:"6px",padding:"8px 16px",fontWeight:"700",fontSize:"12px"}}>Dispatch Now</button>
-                      <button style={{background:"white",color:"#374151",border:"1px solid #d1d5db",borderRadius:"6px",padding:"8px 16px",fontWeight:"600",fontSize:"12px"}}>Live Location</button>
-                      <button style={{background:"white",color:"#374151",border:"1px solid #d1d5db",borderRadius:"6px",padding:"8px 16px",fontWeight:"600",fontSize:"12px"}}>Play Recording</button>
+                    <div style={{display:"flex",gap:"7px",flexWrap:"wrap"}}>
+                      <button style={{background:"#ef4444",color:"white",border:"none",borderRadius:"6px",padding:"8px 14px",fontWeight:"700",fontSize:"12px"}}>Dispatch Now</button>
+                      <button style={{background:"white",color:"#374151",border:"1px solid #d1d5db",borderRadius:"6px",padding:"8px 11px",fontWeight:"600",fontSize:"12px"}}>Live Location</button>
+                      <button style={{background:"white",color:"#374151",border:"1px solid #d1d5db",borderRadius:"6px",padding:"8px 11px",fontWeight:"600",fontSize:"12px"}}>Recording</button>
                     </div>
                   )}
                 </div>
@@ -834,147 +1424,139 @@ function AdminPanel({onLogout}){
             </div>
           </div>
         )}
-
-        {activeTab==="broadcast"&&(
+        {tab==="broadcast"&&(
           <div>
-            <h1 style={{fontSize:"24px",fontWeight:"800",color:"#0f172a",marginBottom:"6px"}}>Broadcast Alerts</h1>
-            <p style={{color:"#64748b",fontSize:"13px",marginBottom:"24px"}}>Send push notifications to citizens by region</p>
-            <div style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"16px",padding:"28px 32px",maxWidth:"560px",marginBottom:"28px"}}>
-              <label style={{display:"block",fontWeight:"600",fontSize:"13px",color:"#374151",marginBottom:"6px"}}>Target Region</label>
-              <select style={{width:"100%",padding:"11px 14px",border:"1px solid #d1d5db",borderRadius:"8px",fontSize:"14px",marginBottom:"18px",background:"white"}}>
+            <h1 style={{fontSize:m?"19px":"23px",fontWeight:"800",color:"#0f172a",marginBottom:"5px"}}>Broadcast Alerts</h1>
+            <p style={{color:"#64748b",fontSize:"12px",marginBottom:"18px"}}>Send push notifications to citizens</p>
+            <div style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"12px",padding:m?"18px":"24px 28px",marginBottom:"22px"}}>
+              <label style={{display:"block",fontWeight:"600",fontSize:"13px",color:"#374151",marginBottom:"5px"}}>Target Region</label>
+              <select style={{width:"100%",padding:"12px 12px",border:"1px solid #d1d5db",borderRadius:"8px",fontSize:"14px",marginBottom:"14px",background:"white",outline:"none"}}>
                 <option>All Lagos State</option><option>Ikeja Division</option><option>Victoria Island Division</option><option>Surulere Division</option><option>Lekki Division</option>
               </select>
-              <label style={{display:"block",fontWeight:"600",fontSize:"13px",color:"#374151",marginBottom:"8px"}}>Alert Type</label>
-              <div style={{display:"flex",gap:"8px",marginBottom:"18px"}}>
-                {[["🔴","Emergency"],["🟡","Warning"],["🔵","Information"]].map(([ico,lbl])=>(
-                  <button key={lbl} style={{flex:1,padding:"10px",border:"1px solid #d1d5db",borderRadius:"8px",background:"white",fontSize:"13px",fontWeight:"600"}}>{ico} {lbl}</button>
+              <label style={{display:"block",fontWeight:"600",fontSize:"13px",color:"#374151",marginBottom:"7px"}}>Alert Type</label>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"7px",marginBottom:"14px"}}>
+                {[["🔴","Emergency"],["🟡","Warning"],["🔵","Info"]].map(([ico,lbl])=>(
+                  <button key={lbl} style={{padding:"9px",border:"1px solid #d1d5db",borderRadius:"8px",background:"white",fontSize:"12px",fontWeight:"600"}}>{ico} {lbl}</button>
                 ))}
               </div>
-              <label style={{display:"block",fontWeight:"600",fontSize:"13px",color:"#374151",marginBottom:"6px"}}>Message</label>
-              <textarea value={broadcastMsg} onChange={e=>setBroadcastMsg(e.target.value)} placeholder="Type your public safety alert here..."
-                style={{width:"100%",minHeight:"100px",padding:"12px 14px",border:"1px solid #d1d5db",borderRadius:"8px",fontSize:"13px",resize:"vertical",outline:"none",fontFamily:"inherit",marginBottom:"18px"}}/>
-              <button onClick={handleBroadcast} style={{width:"100%",background:broadcasted?"#22c55e":"#4c1d95",color:"white",border:"none",borderRadius:"8px",padding:"13px",fontWeight:"700",fontSize:"14px",transition:"background 0.3s"}}>
-                {broadcasted?"✓ Broadcast Sent!":"📢 Send Broadcast"}
+              <label style={{display:"block",fontWeight:"600",fontSize:"13px",color:"#374151",marginBottom:"5px"}}>Message</label>
+              <textarea value={bMsg} onChange={e=>setBMsg(e.target.value)} placeholder="Type your public safety alert here..."
+                style={{width:"100%",minHeight:"85px",padding:"11px 12px",border:"1px solid #d1d5db",borderRadius:"8px",fontSize:"14px",resize:"vertical",outline:"none",fontFamily:"inherit",marginBottom:"14px"}}/>
+              <button onClick={broadcast} style={{width:"100%",background:bSent?"#22c55e":"#4c1d95",color:"white",border:"none",borderRadius:"8px",padding:"13px",fontWeight:"700",fontSize:"14px",transition:"background .3s"}}>
+                {bSent?"✓ Broadcast Sent!":"📢 Send Broadcast"}
               </button>
             </div>
-            <div>
-              <div style={{fontWeight:"700",fontSize:"14px",color:"#0f172a",marginBottom:"12px"}}>Recent Broadcasts</div>
-              {[{msg:"Road closure on Eko Bridge due to incident. Use alternative routes.",time:"Today 10:22",region:"All Lagos"},{msg:"Avoid Oshodi underbridge area. Police operation in progress.",time:"Yesterday 18:04",region:"Oshodi"}].map((b,i)=>(
-                <div key={i} style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"10px",padding:"14px 18px",marginBottom:"10px"}}>
-                  <div style={{fontSize:"13px",color:"#374151",marginBottom:"6px"}}>{b.msg}</div>
-                  <div style={{fontSize:"11px",color:"#94a3b8"}}>{b.time} • {b.region}</div>
-                </div>
-              ))}
-            </div>
+            <div style={{fontWeight:"700",fontSize:"13px",color:"#0f172a",marginBottom:"10px"}}>Recent Broadcasts</div>
+            {[{msg:"Road closure on Eko Bridge due to incident. Use alternative routes.",time:"Today 10:22",region:"All Lagos"},{msg:"Avoid Oshodi underbridge area. Police operation in progress.",time:"Yesterday 18:04",region:"Oshodi"}].map((b,i)=>(
+              <div key={i} style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"10px",padding:"12px 14px",marginBottom:"7px"}}>
+                <div style={{fontSize:"13px",color:"#374151",marginBottom:"4px"}}>{b.msg}</div>
+                <div style={{fontSize:"11px",color:"#94a3b8"}}>{b.time} · {b.region}</div>
+              </div>
+            ))}
           </div>
         )}
-
-        {activeTab==="analytics"&&(
+        {tab==="analytics"&&(
           <div>
-            <h1 style={{fontSize:"24px",fontWeight:"800",color:"#0f172a",marginBottom:"6px"}}>Analytics & Reports</h1>
-            <p style={{color:"#64748b",fontSize:"13px",marginBottom:"24px"}}>Performance metrics and trend analysis</p>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"20px",marginBottom:"24px"}}>
-              <div style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"12px",padding:"20px 24px"}}>
-                <div style={{fontWeight:"700",fontSize:"14px",color:"#0f172a",marginBottom:"16px"}}>Reports by Crime Type</div>
-                {[["Theft/Robbery",35,"#ef4444"],["Assault",22,"#f97316"],["Drug Related",18,"#f59e0b"],["Vandalism",14,"#3b82f6"],["Fraud/Scam",11,"#8b5cf6"]].map(([lbl,pct,color])=>(
-                  <div key={lbl} style={{marginBottom:"10px"}}>
-                    <div style={{display:"flex",justifyContent:"space-between",fontSize:"12px",marginBottom:"4px"}}>
-                      <span style={{color:"#374151"}}>{lbl}</span>
-                      <span style={{fontWeight:"700",color:"#0f172a"}}>{pct}%</span>
+            <h1 style={{fontSize:m?"19px":"23px",fontWeight:"800",color:"#0f172a",marginBottom:"5px"}}>Analytics & Reports</h1>
+            <p style={{color:"#64748b",fontSize:"12px",marginBottom:"18px"}}>Performance metrics and trends</p>
+            <div className="grid2" style={{marginBottom:"16px"}}>
+              <div style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"12px",padding:"16px 18px"}}>
+                <div style={{fontWeight:"700",fontSize:"13px",color:"#0f172a",marginBottom:"12px"}}>Reports by Crime Type</div>
+                {[["Theft/Robbery",35,"#ef4444"],["Assault",22,"#f97316"],["Drug Related",18,"#f59e0b"],["Vandalism",14,"#3b82f6"],["Fraud/Scam",11,"#8b5cf6"]].map(([l,p,c])=>(
+                  <div key={l} style={{marginBottom:"8px"}}>
+                    <div style={{display:"flex",justifyContent:"space-between",fontSize:"12px",marginBottom:"3px"}}>
+                      <span style={{color:"#374151"}}>{l}</span><span style={{fontWeight:"700"}}>{p}%</span>
                     </div>
-                    <div style={{background:"#f1f5f9",borderRadius:"4px",height:"6px"}}>
-                      <div style={{background:color,width:`${pct}%`,height:"6px",borderRadius:"4px"}}></div>
+                    <div style={{background:"#f1f5f9",borderRadius:"3px",height:"5px"}}>
+                      <div style={{background:c,width:`${p}%`,height:"5px",borderRadius:"3px"}}></div>
                     </div>
                   </div>
                 ))}
               </div>
-              <div style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"12px",padding:"20px 24px"}}>
-                <div style={{fontWeight:"700",fontSize:"14px",color:"#0f172a",marginBottom:"16px"}}>Response Time by Urgency</div>
-                {[["Critical","4 min","#ef4444",90],["High","8 min","#f97316",70],["Medium","15 min","#f59e0b",50],["Low","32 min","#22c55e",30]].map(([lbl,time,color,pct])=>(
-                  <div key={lbl} style={{marginBottom:"12px"}}>
-                    <div style={{display:"flex",justifyContent:"space-between",fontSize:"12px",marginBottom:"4px"}}>
-                      <span style={{color:"#374151"}}>{lbl}</span>
-                      <span style={{fontWeight:"700",color}}>{time} avg</span>
+              <div style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"12px",padding:"16px 18px"}}>
+                <div style={{fontWeight:"700",fontSize:"13px",color:"#0f172a",marginBottom:"12px"}}>Response Time by Urgency</div>
+                {[["Critical","4 min","#ef4444",90],["High","8 min","#f97316",70],["Medium","15 min","#f59e0b",50],["Low","32 min","#22c55e",30]].map(([l,t,c,p])=>(
+                  <div key={l} style={{marginBottom:"10px"}}>
+                    <div style={{display:"flex",justifyContent:"space-between",fontSize:"12px",marginBottom:"3px"}}>
+                      <span style={{color:"#374151"}}>{l}</span><span style={{fontWeight:"700",color:c}}>{t}</span>
                     </div>
-                    <div style={{background:"#f1f5f9",borderRadius:"4px",height:"6px"}}>
-                      <div style={{background:color,width:`${pct}%`,height:"6px",borderRadius:"4px"}}></div>
+                    <div style={{background:"#f1f5f9",borderRadius:"3px",height:"5px"}}>
+                      <div style={{background:c,width:`${p}%`,height:"5px",borderRadius:"3px"}}></div>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-            <div style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"12px",padding:"20px 24px",marginBottom:"20px"}}>
-              <div style={{fontWeight:"700",fontSize:"14px",color:"#0f172a",marginBottom:"16px"}}>Weekly Report Volume</div>
-              <div style={{display:"flex",alignItems:"flex-end",gap:"12px",height:"100px"}}>
+            <div style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"12px",padding:"16px 18px",marginBottom:"14px"}}>
+              <div style={{fontWeight:"700",fontSize:"13px",color:"#0f172a",marginBottom:"12px"}}>Weekly Report Volume</div>
+              <div style={{display:"flex",alignItems:"flex-end",gap:m?"6px":"10px",height:"75px"}}>
                 {[{day:"Mon",val:60},{day:"Tue",val:80},{day:"Wed",val:45},{day:"Thu",val:90},{day:"Fri",val:75},{day:"Sat",val:55},{day:"Sun",val:40}].map(d=>(
-                  <div key={d.day} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:"6px"}}>
-                    <div style={{background:"#4c1d95",width:"100%",height:`${d.val}%`,borderRadius:"4px 4px 0 0",minHeight:"8px"}}></div>
-                    <span style={{fontSize:"11px",color:"#94a3b8"}}>{d.day}</span>
+                  <div key={d.day} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:"3px"}}>
+                    <div style={{background:"#4c1d95",width:"100%",height:`${d.val}%`,borderRadius:"3px 3px 0 0",minHeight:"5px"}}></div>
+                    <span style={{fontSize:"10px",color:"#94a3b8"}}>{d.day}</span>
                   </div>
                 ))}
               </div>
             </div>
-            <div style={{display:"flex",gap:"12px"}}>
-              <button style={{background:"#0f172a",color:"white",border:"none",borderRadius:"8px",padding:"10px 20px",fontWeight:"600",fontSize:"13px"}}>⬇ Export PDF Report</button>
-              <button style={{background:"white",color:"#374151",border:"1px solid #d1d5db",borderRadius:"8px",padding:"10px 20px",fontWeight:"600",fontSize:"13px"}}>⬇ Export CSV</button>
+            <div style={{display:"flex",gap:"9px",flexWrap:"wrap"}}>
+              <button style={{background:"#0f172a",color:"white",border:"none",borderRadius:"8px",padding:"9px 16px",fontWeight:"600",fontSize:"12px"}}>⬇ Export PDF</button>
+              <button style={{background:"white",color:"#374151",border:"1px solid #d1d5db",borderRadius:"8px",padding:"9px 16px",fontWeight:"600",fontSize:"12px"}}>⬇ Export CSV</button>
             </div>
           </div>
         )}
-
-        {activeTab==="vault"&&(
+        {tab==="vault"&&(
           <div>
-            <h1 style={{fontSize:"24px",fontWeight:"800",color:"#0f172a",marginBottom:"6px"}}>Evidence Vault</h1>
-            <p style={{color:"#64748b",fontSize:"13px",marginBottom:"20px"}}>Tamper-proof forensic media with full audit trail</p>
-            <div style={{background:"#fff7ed",border:"1px solid #fed7aa",borderRadius:"10px",padding:"12px 16px",marginBottom:"20px",fontSize:"13px",color:"#92400e"}}>
-              🔐 All evidence is AES-256 encrypted. Access is logged and audited. Unauthorized access is a federal offense.
+            <h1 style={{fontSize:m?"19px":"23px",fontWeight:"800",color:"#0f172a",marginBottom:"5px"}}>Evidence Vault</h1>
+            <p style={{color:"#64748b",fontSize:"12px",marginBottom:"14px"}}>Tamper-proof forensic media with audit trail</p>
+            <div style={{background:"#fff7ed",border:"1px solid #fed7aa",borderRadius:"10px",padding:"11px 13px",marginBottom:"14px",fontSize:"12px",color:"#92400e",lineHeight:1.5}}>
+              🔐 AES-256 encrypted. Access fully logged and audited. Unauthorized access is a federal offense.
             </div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"14px",marginBottom:"24px"}}>
+            <div className="grid2" style={{marginBottom:"18px"}}>
               {[{id:"RPT-001",type:"Photo",count:2,size:"4.2 MB",sealed:true},{id:"RPT-002",type:"Video",count:1,size:"28 MB",sealed:true},{id:"RPT-003",type:"Photo",count:3,size:"6.8 MB",sealed:false},{id:"RPT-006",type:"Photo",count:2,size:"3.1 MB",sealed:true}].map(e=>(
-                <div key={e.id} style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"12px",padding:"18px 20px"}}>
-                  <div style={{fontSize:"28px",marginBottom:"10px"}}>{e.type==="Photo"?"🖼️":"🎥"}</div>
-                  <div style={{fontWeight:"700",fontSize:"14px",color:"#0f172a",marginBottom:"4px"}}>{e.id}</div>
-                  <div style={{fontSize:"12px",color:"#64748b",marginBottom:"8px"}}>{e.count} file(s) • {e.size}</div>
-                  <Badge label={e.sealed?"🔏 Sealed":"🔓 Accessible"} color={e.sealed?"#7c3aed":"#374151"} bg={e.sealed?"#f5f3ff":"#f8fafc"}/>
-                  <button style={{background:"#f1f5f9",border:"none",borderRadius:"6px",padding:"6px 14px",fontSize:"12px",fontWeight:"600",color:"#374151",width:"100%",marginTop:"12px"}}>View with Audit Log</button>
+                <div key={e.id} style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"12px",padding:"14px 15px"}}>
+                  <div style={{fontSize:"24px",marginBottom:"7px"}}>{e.type==="Photo"?"🖼️":"🎥"}</div>
+                  <div style={{fontWeight:"700",fontSize:"13px",color:"#0f172a",marginBottom:"3px"}}>{e.id}</div>
+                  <div style={{fontSize:"12px",color:"#64748b",marginBottom:"7px"}}>{e.count} file(s) · {e.size}</div>
+                  <Bdg label={e.sealed?"🔏 Sealed":"🔓 Accessible"} color={e.sealed?"#7c3aed":"#374151"} bg={e.sealed?"#f5f3ff":"#f8fafc"}/>
+                  <button style={{background:"#f1f5f9",border:"none",borderRadius:"6px",padding:"7px 11px",fontSize:"11px",fontWeight:"600",color:"#374151",width:"100%",marginTop:"9px"}}>View + Audit Log</button>
                 </div>
               ))}
             </div>
-            <div style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"12px",padding:"20px 24px"}}>
-              <div style={{fontWeight:"700",fontSize:"14px",color:"#0f172a",marginBottom:"14px"}}>Recent Audit Trail</div>
-              {[{action:"Evidence accessed",user:"Admin",report:"RPT-003",time:"Today 11:04"},{action:"Evidence sealed",user:"System",report:"RPT-001",time:"Today 09:21"},{action:"New evidence uploaded",user:"Sgt. Adebayo",report:"RPT-006",time:"Yesterday 17:45"},{action:"Evidence viewed",user:"Insp. Bello",report:"RPT-002",time:"Yesterday 14:12"}].map((a,i)=>(
-                <div key={i} style={{display:"flex",gap:"12px",padding:"10px 0",borderBottom:"1px solid #f1f5f9",fontSize:"12px",flexWrap:"wrap"}}>
-                  <span style={{color:"#94a3b8",whiteSpace:"nowrap"}}>{a.time}</span>
+            <div style={{background:"white",border:"1px solid #e2e8f0",borderRadius:"12px",padding:"16px 18px"}}>
+              <div style={{fontWeight:"700",fontSize:"13px",color:"#0f172a",marginBottom:"10px"}}>Recent Audit Trail</div>
+              {[{action:"Evidence accessed",user:"Admin",report:"RPT-003",time:"Today 11:04"},{action:"Evidence sealed",user:"System",report:"RPT-001",time:"Today 09:21"},{action:"Evidence uploaded",user:"Sgt. Adebayo",report:"RPT-006",time:"Yesterday 17:45"},{action:"Evidence viewed",user:"Insp. Bello",report:"RPT-002",time:"Yesterday 14:12"}].map((a,i)=>(
+                <div key={i} style={{display:"flex",gap:"7px",padding:"8px 0",borderBottom:"1px solid #f1f5f9",fontSize:"12px",flexWrap:"wrap",alignItems:"center"}}>
+                  <span style={{color:"#94a3b8",whiteSpace:"nowrap",fontSize:"11px"}}>{a.time}</span>
                   <span style={{fontWeight:"600",color:"#0f172a"}}>{a.action}</span>
                   <span style={{color:"#64748b"}}>by {a.user}</span>
-                  <span style={{color:"#3b82f6",marginLeft:"auto"}}>{a.report}</span>
+                  <span style={{color:"#3b82f6",marginLeft:"auto",fontWeight:"600"}}>{a.report}</span>
                 </div>
               ))}
             </div>
           </div>
         )}
-
       </div>
-      {selectedReport&&<ReportDetailModal report={selectedReport} onClose={()=>setSelectedReport(null)} onStatusChange={updateStatus} isAdmin={true}/>}
+      {sel&&<ReportDetailModal report={sel} onClose={()=>setSel(null)} onStatusChange={upStatus} isAdmin={true}/>}
     </div>
   );
 }
 
-// ── ROOT APP ───────────────────────────────────────────────────────────────
+/* ── ROOT ── */
 function App(){
-  const [view,setView]=useState("home");
-  const [loginModal,setLoginModal]=useState(null);
+  const[view,setView]=useState("home");
+  const[loginModal,setLoginModal]=useState(null);
   return(
     <div>
       {view!=="police"&&view!=="admin"&&(
         <Navbar
           onHome={()=>setView("home")}
-          onReportCrime={()=>setView("report")}
+          onReport={()=>setView("report")}
           onMyReports={()=>setView("myreports")}
           onPoliceLogin={()=>setLoginModal("police")}
           onAdminLogin={()=>setLoginModal("admin")}
         />
       )}
-      {view==="home"&&<HomePage onReportCrime={()=>setView("report")}/>}
+      {view==="home"&&<HomePage onReport={()=>setView("report")}/>}
       {view==="report"&&<ReportForm onSuccess={()=>setView("success")} onCancel={()=>setView("home")}/>}
       {view==="success"&&<SuccessScreen onDashboard={()=>setView("home")}/>}
       {view==="myreports"&&<MyReportsPage/>}
@@ -984,7 +1566,6 @@ function App(){
     </div>
   );
 }
-
 ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
 </body>
