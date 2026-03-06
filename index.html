@@ -1533,28 +1533,137 @@ function AdminPanel({onLogout}){
   );
 }
 
+/* ── LOGIN PAGE ── */
+function LoginPage({onSuccess}){
+  const m=useIsMobile();
+  const[role,setRole]=useState(null);
+  const[badge,setBadge]=useState("");
+  const[otp,setOtp]=useState("");
+  const[step,setStep]=useState(1);
+  const[loading,setLoading]=useState(false);
+  const[error,setError]=useState("");
+  const C=role==="police"?{badge:"LG-4421",otp:"112112"}:{badge:"ADMIN-01",otp:"999999"};
+  async function hBadge(){if(!badge){setError("Enter your ID");return;}setLoading(true);setError("");await new Promise(r=>setTimeout(r,700));setLoading(false);if(badge.toUpperCase()!==C.badge){setError("ID not found");return;}setStep(2);}
+  async function hOtp(){if(!otp){setError("Enter OTP");return;}setLoading(true);setError("");await new Promise(r=>setTimeout(r,700));setLoading(false);if(otp!==C.otp){setError("Invalid OTP — try "+C.otp);return;}onSuccess(role);}
+  function back(){setStep(1);setBadge("");setOtp("");setError("");}
+
+  return(
+    <div style={{minHeight:"100vh",background:"#0f172a",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"24px 16px"}}>
+      {/* Logo */}
+      <div style={{display:"flex",alignItems:"center",gap:"10px",marginBottom:"32px"}}>
+        <div style={{background:"#f59e0b",borderRadius:"8px",width:"40px",height:"40px",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:"900",color:"#0f172a",fontSize:"15px"}}>RP</div>
+        <div>
+          <div style={{color:"white",fontWeight:"800",fontSize:"18px",lineHeight:1}}>RePolice</div>
+          <div style={{color:"#475569",fontSize:"9px",letterSpacing:"2px",textTransform:"uppercase"}}>STAFF ACCESS</div>
+        </div>
+      </div>
+
+      <div style={{background:"white",borderRadius:"16px",width:"100%",maxWidth:"380px",overflow:"hidden",boxShadow:"0 24px 60px rgba(0,0,0,.4)"}}>
+        {/* Header bar */}
+        <div style={{background:role==="admin"?"#4c1d95":role==="police"?"#1d4ed8":"#0f172a",padding:"20px 24px"}}>
+          <div style={{fontSize:"28px",marginBottom:"6px"}}>{role==="police"?"👮":role==="admin"?"🛡️":"🔐"}</div>
+          <h1 style={{color:"white",fontWeight:"800",fontSize:"18px",marginBottom:"3px"}}>
+            {!role?"Staff Login":role==="police"?"Police Officer Login":"Admin Panel Login"}
+          </h1>
+          <p style={{color:"rgba(255,255,255,.6)",fontSize:"12px"}}>
+            {!role?"Select your access role below":step===1?"Enter your badge / admin ID":"Enter the OTP sent to your number"}
+          </p>
+        </div>
+
+        <div style={{padding:"24px"}}>
+          {/* Role selector */}
+          {!role&&(
+            <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
+              <button onClick={()=>setRole("police")} style={{background:"#eff6ff",border:"2px solid #bfdbfe",borderRadius:"10px",padding:"16px",display:"flex",alignItems:"center",gap:"12px",fontWeight:"700",fontSize:"14px",color:"#1d4ed8"}}>
+                <span style={{fontSize:"24px"}}>👮</span>
+                <div style={{textAlign:"left"}}>
+                  <div style={{fontWeight:"700",fontSize:"14px"}}>Police Officer</div>
+                  <div style={{fontWeight:"400",fontSize:"11px",color:"#64748b"}}>Access assigned cases & SOS alerts</div>
+                </div>
+              </button>
+              <button onClick={()=>setRole("admin")} style={{background:"#f5f3ff",border:"2px solid #ddd6fe",borderRadius:"10px",padding:"16px",display:"flex",alignItems:"center",gap:"12px",fontWeight:"700",fontSize:"14px",color:"#7c3aed"}}>
+                <span style={{fontSize:"24px"}}>🛡️</span>
+                <div style={{textAlign:"left"}}>
+                  <div style={{fontWeight:"700",fontSize:"14px"}}>Administrator</div>
+                  <div style={{fontWeight:"400",fontSize:"11px",color:"#64748b"}}>Full command dashboard access</div>
+                </div>
+              </button>
+              <div style={{marginTop:"8px",padding:"10px 12px",background:"#f8fafc",borderRadius:"8px",fontSize:"11px",color:"#94a3b8",textAlign:"center",lineHeight:1.5}}>
+                🔒 Authorized personnel only. All access is logged and audited.
+              </div>
+            </div>
+          )}
+
+          {/* Badge step */}
+          {role&&step===1&&(
+            <div>
+              <label style={{fontSize:"13px",fontWeight:"600",color:"#374151",display:"block",marginBottom:"6px"}}>{role==="police"?"Badge ID":"Admin ID"}</label>
+              <input value={badge} onChange={e=>setBadge(e.target.value)} onKeyDown={e=>e.key==="Enter"&&hBadge()} placeholder={role==="police"?"e.g. LG-4421":"e.g. ADMIN-01"}
+                style={{width:"100%",padding:"13px",border:"1px solid #d1d5db",borderRadius:"8px",fontSize:"15px",marginBottom:"6px",outline:"none",fontFamily:"inherit"}}/>
+              {error&&<p style={{color:"#ef4444",fontSize:"12px",marginBottom:"6px"}}>{error}</p>}
+              <p style={{fontSize:"11px",color:"#94a3b8",marginBottom:"16px"}}>Demo: <strong>{C.badge}</strong></p>
+              <button onClick={hBadge} style={{width:"100%",background:role==="police"?"#1d4ed8":"#7c3aed",color:"white",border:"none",borderRadius:"8px",padding:"14px",fontWeight:"700",fontSize:"14px"}}>
+                {loading?"Verifying…":"Continue →"}
+              </button>
+              <button onClick={()=>{setRole(null);setStep(1);setBadge("");setError("");}} style={{width:"100%",background:"none",border:"none",color:"#94a3b8",fontSize:"13px",marginTop:"10px",padding:"8px"}}>← Back</button>
+            </div>
+          )}
+
+          {/* OTP step */}
+          {role&&step===2&&(
+            <div>
+              <label style={{fontSize:"13px",fontWeight:"600",color:"#374151",display:"block",marginBottom:"6px"}}>OTP Code</label>
+              <input value={otp} onChange={e=>setOtp(e.target.value)} onKeyDown={e=>e.key==="Enter"&&hOtp()} placeholder="6-digit OTP"
+                style={{width:"100%",padding:"13px",border:"1px solid #d1d5db",borderRadius:"8px",fontSize:"22px",marginBottom:"6px",outline:"none",letterSpacing:"10px",textAlign:"center",fontFamily:"monospace"}}/>
+              {error&&<p style={{color:"#ef4444",fontSize:"12px",marginBottom:"6px"}}>{error}</p>}
+              <p style={{fontSize:"11px",color:"#94a3b8",marginBottom:"16px"}}>Demo OTP: <strong>{C.otp}</strong></p>
+              <button onClick={hOtp} style={{width:"100%",background:role==="police"?"#1d4ed8":"#7c3aed",color:"white",border:"none",borderRadius:"8px",padding:"14px",fontWeight:"700",fontSize:"14px"}}>
+                {loading?"Authenticating…":"Login →"}
+              </button>
+              <button onClick={back} style={{width:"100%",background:"none",border:"none",color:"#94a3b8",fontSize:"13px",marginTop:"10px",padding:"8px"}}>← Back</button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <p style={{color:"#334155",fontSize:"11px",marginTop:"20px",textAlign:"center"}}>
+        © 2026 RePolice Beta · <a href="#home" style={{color:"#475569",textDecoration:"none"}}>← Back to Home</a>
+      </p>
+    </div>
+  );
+}
+
 /* ── ROOT ── */
 function App(){
-  const[view,setView]=useState("home");
-  const[loginModal,setLoginModal]=useState(null);
+  function getHash(){return window.location.hash.replace("#","").split("?")[0]||"home";}
+  const[view,setView]=useState(getHash);
+
+  useEffect(()=>{
+    const handler=()=>setView(getHash());
+    window.addEventListener("hashchange",handler);
+    return()=>window.removeEventListener("hashchange",handler);
+  },[]);
+
+  function nav(v){window.location.hash=v;setView(v);}
+
   return(
     <div>
-      {view!=="police"&&view!=="admin"&&(
+      {view!=="police"&&view!=="admin"&&view!=="login"&&(
         <Navbar
-          onHome={()=>setView("home")}
-          onReport={()=>setView("report")}
-          onMyReports={()=>setView("myreports")}
-          onPoliceLogin={()=>setLoginModal("police")}
-          onAdminLogin={()=>setLoginModal("admin")}
+          onHome={()=>nav("home")}
+          onReport={()=>nav("report")}
+          onMyReports={()=>nav("myreports")}
+          onPoliceLogin={()=>nav("login")}
+          onAdminLogin={()=>nav("login")}
         />
       )}
-      {view==="home"&&<HomePage onReport={()=>setView("report")}/>}
-      {view==="report"&&<ReportForm onSuccess={()=>setView("success")} onCancel={()=>setView("home")}/>}
-      {view==="success"&&<SuccessScreen onDashboard={()=>setView("home")}/>}
+      {view==="home"&&<HomePage onReport={()=>nav("report")}/>}
+      {view==="report"&&<ReportForm onSuccess={()=>nav("success")} onCancel={()=>nav("home")}/>}
+      {view==="success"&&<SuccessScreen onDashboard={()=>nav("home")}/>}
       {view==="myreports"&&<MyReportsPage/>}
-      {view==="police"&&<PolicePanel onLogout={()=>setView("home")}/>}
-      {view==="admin"&&<AdminPanel onLogout={()=>setView("home")}/>}
-      {loginModal&&<LoginModal role={loginModal} onSuccess={()=>{setView(loginModal);setLoginModal(null);}} onClose={()=>setLoginModal(null)}/>}
+      {view==="login"&&<LoginPage onSuccess={(role)=>nav(role)}/>}
+      {view==="police"&&<PolicePanel onLogout={()=>nav("home")}/>}
+      {view==="admin"&&<AdminPanel onLogout={()=>nav("home")}/>}
     </div>
   );
 }
